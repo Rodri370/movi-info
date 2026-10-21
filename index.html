@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MOVI-INFO · Mapa real</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{--ind:#2e2b6b;--ind2:#3b3a8c;--gr:#1e6b3a;--lgr:#ddf3e4;--bg:#f3f2fb;--card:#fff;--tx:#1d1b3a;--mu:#6b6990;--ln:#dcdaf0}
+@media(prefers-color-scheme:dark){:root{--bg:#14132b;--card:#1e1d3d;--tx:#ecebff;--mu:#a3a1cc;--ln:#34326a;--lgr:#173a27;--gr:#6fd596}}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{display:flex;flex-direction:column;background:var(--bg);color:var(--tx);font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif;padding-top:env(safe-area-inset-top,0)}
+header{background:var(--ind);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+header b{font-size:18px}header span{font-size:12px;opacity:.85}
+#map{flex:1;min-height:0}
+#panel{max-height:46%;overflow-y:auto;padding:12px 12px calc(12px + env(safe-area-inset-bottom,0));background:var(--bg)}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.big{font-size:30px;font-weight:700}.mu{color:var(--mu);font-size:12px}
+.tag{font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;color:#fff;background:#888}
+.btns{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+button{font:inherit;background:var(--card);color:var(--tx);border:2px solid var(--ln);border-radius:12px;padding:10px 2px;font-size:12px;font-weight:700;cursor:pointer}
+button:active{background:var(--lgr);border-color:var(--gr)}
+button.c{width:100%;margin-top:8px;background:var(--gr);color:#fff;border:0;padding:12px;font-size:14px}
+.rp{font-size:22px;text-align:center;line-height:1}
+a{color:var(--ind2)}
+</style></head><body>
+<header><b>MOVI-INFO · Mapa real</b><span id="gps">GPS: buscando…</span></header>
+<div id="map"></div>
+<section id="panel">
+ <div class="card"><div class="row"><div><div class="mu">Clima ahora</div><div class="big" id="temp">–</div></div><div style="text-align:right"><div id="wdesc" style="font-weight:700">Cargando…</div><div class="mu" id="wdet"></div></div></div>
+  <div id="tip" style="margin-top:8px;font-size:14px"></div>
+  <div class="mu" style="margin-top:6px"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a></div></div>
+ <div class="card"><div class="row"><div><div class="mu">Estado de la vía donde estás</div><div id="tr" style="font-weight:700">–</div></div><span class="tag" id="trt">sin datos</span></div><div class="mu" id="trd"></div></div>
+ <div class="card"><div class="mu" style="margin-bottom:8px">Reportar en tu ubicación (se guarda en este dispositivo)</div>
+  <div class="btns" id="rb"></div><button class="c" id="ctr">Centrar en mi ubicación</button></div>
+</section>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// ====== CONFIGURACIÓN ======
+const CONFIG={TOMTOM_KEY:'',      // pega aquí tu clave de TomTom para ver el tráfico real
+ CENTER:[11.2408,-74.1990]};      // Santa Marta, por si el GPS no está disponible
+// ===========================
+const $=s=>document.querySelector(s);
+const map=L.map('map',{zoomControl:false}).setView(CONFIG.CENTER,14);
+L.control.zoom({position:'topright'}).addTo(map);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);
+if(CONFIG.TOMTOM_KEY)L.tileLayer(`https://api.tomtom.com/traffic/map/4/tile/flow/relative/{z}/{x}/{y}.png?key=${CONFIG.TOMTOM_KEY}`,{opacity:.85,maxZoom:18}).addTo(map);
+
+let me,acc,pos,first=true;
+function here(){return pos||[map.getCenter().lat,map.getCenter().lng]}
+function onPos(p){pos=[p.coords.latitude,p.coords.longitude];
+ if(!me){me=L.circleMarker(pos,{radius:8,color:'#fff',weight:3,fillColor:'#2563eb',fillOpacity:1}).addTo(map);acc=L.circle(pos,{radius:p.coords.accuracy,color:'#2563eb',weight:1,fillOpacity:.1}).addTo(map)}
+ else{me.setLatLng(pos);acc.setLatLng(pos);acc.setRadius(p.coords.accuracy)}
+ $('#gps').textContent='GPS activo ±'+Math.round(p.coords.accuracy)+' m';
+ if(first){first=false;map.setView(pos,16);weather();traffic()}}
+function noPos(e){$('#gps').textContent='GPS no disponible';if(first){first=false;weather();traffic()}}
+if(navigator.geolocation)navigator.geolocation.watchPosition(onPos,noPos,{enableHighAccuracy:true,maximumAge:5000,timeout:15000});else noPos();
+$('#ctr').onclick=()=>pos?map.setView(pos,17):alert('Activa el permiso de ubicación (requiere HTTPS).');
+
+// ----- Clima (Open-Meteo, sin clave) -----
+const WC=c=>c==0?['☀️','Despejado']:c<=3?['⛅','Parcialmente nublado']:c<=48?['🌫️','Niebla']:c<=57?['🌦️','Llovizna']:c<=67?['🌧️','Lluvia']:c<=82?['🌧️','Chubascos']:['⛈️','Tormenta'];
+async function weather(){try{const[a,b]=here();
+ const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${a}&longitude=${b}&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,relative_humidity_2m&timezone=auto`);
+ const c=(await r.json()).current,[ic,tx]=WC(c.weather_code);
+ $('#temp').textContent=ic+' '+Math.round(c.temperature_2m)+'°C';$('#wdesc').textContent=tx;
+ $('#wdet').textContent=`Sensación ${Math.round(c.apparent_temperature)}°C · Humedad ${c.relative_humidity_2m}% · Viento ${Math.round(c.wind_speed_10m)} km/h`;
+ $('#tip').textContent=c.precipitation>0||c.weather_code>=51?'🌧️ Está lloviendo: sal unos 10 minutos antes y ten cuidado en las vías.':c.apparent_temperature>=34?'🥵 Calor fuerte: prefiere rutas con sombra o buses con aire acondicionado.':'👍 Buen clima para desplazarte.'}
+ catch(e){$('#wdesc').textContent='Sin conexión al clima'}}
+
+// ----- Tráfico (TomTom Flow Segment Data) -----
+async function traffic(){const t=$('#trt');
+ if(!CONFIG.TOMTOM_KEY){$('#tr').textContent='Falta la clave de TomTom';$('#trd').textContent='Pégala en CONFIG.TOMTOM_KEY (arriba en el código) para ver el tráfico real.';return}
+ try{const[a,b]=here();const r=await fetch(`https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json?key=${CONFIG.TOMTOM_KEY}&point=${a},${b}`);
+ const f=(await r.json()).flowSegmentData,q=f.currentSpeed/f.freeFlowSpeed;
+ const[s,c]=q>=.8?['Fluido','#2faa5b']:q>=.5?['Moderado','#e5a524']:['Congestionado','#d64545'];
+ $('#tr').textContent=s;t.textContent=Math.round(f.currentSpeed)+' km/h';t.style.background=c;
+ $('#trd').textContent=`Velocidad normal ${Math.round(f.freeFlowSpeed)} km/h · tiempo de recorrido ${f.currentTravelTime}s vs ${f.freeFlowTravelTime}s`}
+ catch(e){$('#tr').textContent='No se pudo leer el tráfico';$('#trd').textContent='Revisa tu clave de TomTom.'}}
+setInterval(()=>{weather();traffic()},120000);
+
+// ----- Reportes de usuarios (guardados en el dispositivo) -----
+const RT=[['🚗','Congestión'],['🅿️','Parqueo lleno'],['⚠️','Accidente'],['✅','Vía libre']];
+let reps=[];try{reps=JSON.parse(localStorage.getItem('mi_reps')||'[]').filter(r=>Date.now()-r.t<72e5)}catch(e){}
+const save=()=>{try{localStorage.setItem('mi_reps',JSON.stringify(reps))}catch(e){}};
+const draw=r=>L.marker([r.a,r.b],{icon:L.divIcon({html:`<div class="rp">${RT[r.k][0]}</div>`,className:'',iconSize:[26,26]})}).addTo(map).bindPopup(`${RT[r.k][1]} · ${new Date(r.t).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})}`);
+reps.forEach(draw);
+$('#rb').innerHTML=RT.map((r,i)=>`<button data-k="${i}"><div class="rp">${r[0]}</div>${r[1]}</button>`).join('');
+$('#rb').onclick=e=>{const b=e.target.closest('button');if(!b)return;const[a,c]=here(),r={k:+b.dataset.k,a,b:c,t:Date.now()};reps.push(r);save();draw(r)};
+</script></body></html>
