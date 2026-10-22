@@ -1,88 +1,738 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>MOVI-INFO · Mapa real</title>
+<meta name="theme-color" content="#2e2b6b">
+<title>MOVI-INFO · Reportes de movilidad</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
-:root{--ind:#2e2b6b;--ind2:#3b3a8c;--gr:#1e6b3a;--lgr:#ddf3e4;--bg:#f3f2fb;--card:#fff;--tx:#1d1b3a;--mu:#6b6990;--ln:#dcdaf0}
-@media(prefers-color-scheme:dark){:root{--bg:#14132b;--card:#1e1d3d;--tx:#ecebff;--mu:#a3a1cc;--ln:#34326a;--lgr:#173a27;--gr:#6fd596}}
+:root{--ind:#2e2b6b;--ind2:#3b3a8c;--gr:#1e6b3a;--lgr:#ddf3e4;--bg:#f3f2fb;--card:#fff;--tx:#1d1b3a;--mu:#5f5c86;--ln:#dcdaf0;--am:#a86a0a;--lam:#fff1d6;--rd:#b53030;--lrd:#fbe3e3}
+@media(prefers-color-scheme:dark){:root{--bg:#14132b;--card:#1e1d3d;--tx:#ecebff;--mu:#aeacd4;--ln:#34326a;--ind:#c9c7f5;--ind2:#9d9bf0;--gr:#6fd596;--lgr:#173a27;--am:#f0b64d;--lam:#3d2f12;--rd:#f19a9a;--lrd:#411d1d}}
 *{box-sizing:border-box}html,body{height:100%;margin:0}
 body{display:flex;flex-direction:column;background:var(--bg);color:var(--tx);font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif;padding-top:env(safe-area-inset-top,0)}
-header{background:var(--ind);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
-header b{font-size:18px}header span{font-size:12px;opacity:.85}
-#map{flex:1;min-height:0}
-#panel{max-height:46%;overflow-y:auto;padding:12px 12px calc(12px + env(safe-area-inset-bottom,0));background:var(--bg)}
+header{background:#2e2b6b;color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+header b{font-size:18px;letter-spacing:.2px}header small{display:block;font-size:11px;opacity:.85;font-weight:400}
+.chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.chip{font-size:11px;font-weight:700;padding:4px 9px;border-radius:99px;background:rgba(255,255,255,.18);white-space:nowrap}
+.chip.ok{background:#2faa5b}.chip.warn{background:#d68b0a}.chip.bad{background:#d64545}
+.app{flex:1;min-height:0;display:flex;flex-direction:column}
+#mapw{flex:1;min-height:180px;position:relative}#map{position:absolute;inset:0}
+#rain{position:absolute;inset:0;z-index:500;pointer-events:none;display:none;background:linear-gradient(105deg,transparent 48%,rgba(150,185,235,.5) 49%,transparent 50%) 0 0/22px 38px;animation:fall .5s linear infinite;opacity:.5}
+@keyframes fall{to{background-position:-8px 38px}}
+#cross{position:absolute;left:50%;top:50%;z-index:600;width:34px;height:34px;margin:-17px 0 0 -17px;pointer-events:none;display:none}
+#cross::before,#cross::after{content:"";position:absolute;background:#2e2b6b;border-radius:2px}
+#cross::before{left:16px;top:0;width:3px;height:34px}#cross::after{top:16px;left:0;height:3px;width:34px}
+#cross i{position:absolute;inset:9px;border:3px solid #2e2b6b;border-radius:50%;background:rgba(255,255,255,.6)}
+#sheet{background:var(--bg);border-top:1px solid var(--ln);max-height:52%;display:flex;flex-direction:column;min-height:0}
+.tabs{display:flex;background:var(--card);border-bottom:1px solid var(--ln)}
+.tabs button{flex:1;border:0;background:none;color:var(--mu);font:inherit;font-weight:700;font-size:14px;padding:12px 4px;border-bottom:3px solid transparent;cursor:pointer}
+.tabs button[aria-selected=true]{color:var(--ind);border-bottom-color:var(--gr)}
+.pane{overflow-y:auto;padding:12px 12px calc(14px + env(safe-area-inset-bottom,0));display:none}.pane.on{display:block}
 .card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:12px 14px;margin-bottom:10px}
 .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.big{font-size:30px;font-weight:700}.mu{color:var(--mu);font-size:12px}
-.tag{font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;color:#fff;background:#888}
-.btns{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-button{font:inherit;background:var(--card);color:var(--tx);border:2px solid var(--ln);border-radius:12px;padding:10px 2px;font-size:12px;font-weight:700;cursor:pointer}
-button:active{background:var(--lgr);border-color:var(--gr)}
-button.c{width:100%;margin-top:8px;background:var(--gr);color:#fff;border:0;padding:12px;font-size:14px}
-.rp{font-size:22px;text-align:center;line-height:1}
+.mu{color:var(--mu);font-size:12px}.big{font-size:28px;font-weight:700}
+h3{margin:0 0 6px;font-size:14px;color:var(--ind)}
+.rec{border-left:6px solid var(--c);}.rec .t{font-size:17px;font-weight:700;color:var(--c)}
+.l0{--c:var(--gr)}.l1{--c:var(--am)}.l2{--c:var(--rd)}
+.rec ul{margin:8px 0 0;padding-left:18px;font-size:13px}.rec li{margin:3px 0}
+button.act{font:inherit;cursor:pointer}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rbtn{background:var(--card);color:var(--tx);border:2px solid var(--ln);border-left:6px solid var(--c);border-radius:12px;padding:10px 8px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;min-height:64px;display:flex;align-items:center;gap:8px;text-align:left}
+.rbtn span{font-size:24px}.rbtn:active{background:var(--lgr)}
+.seg{display:flex;gap:6px;margin-bottom:10px}.seg button{flex:1;font:inherit;font-size:12px;font-weight:700;padding:9px 4px;border-radius:10px;border:2px solid var(--ln);background:var(--card);color:var(--tx);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ind2);border-color:var(--ind2);color:#fff}
+select{font:inherit;padding:10px;border-radius:10px;border:1px solid var(--ln);background:var(--bg);color:var(--tx)}
+.go{width:100%;margin-top:8px;background:var(--gr);color:#fff;border:0;border-radius:12px;padding:12px;font:inherit;font-weight:700;font-size:15px;cursor:pointer}
+.go:disabled{opacity:.5}
+.kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.kpi{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:10px 6px;text-align:center}.kpi b{display:block;font-size:20px}.kpi span{font-size:11px;color:var(--mu)}
+.bars{display:flex;align-items:flex-end;gap:2px;height:80px;margin-top:8px}.bars i{flex:1;background:var(--ind2);border-radius:3px 3px 0 0;min-height:2px}
+.axis{display:flex;justify-content:space-between;font-size:10px;color:var(--mu);margin-top:2px}
+.hb{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px}.hb div{flex:1;height:10px;background:var(--ln);border-radius:6px;overflow:hidden}.hb i{display:block;height:100%;background:var(--c)}
+.pin{width:36px;height:36px;border-radius:50%;background:#fff;border:3px solid var(--c);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 6px rgba(0,0,0,.35);position:relative}
+.pin.new{animation:pop .5s ease-out}@keyframes pop{from{transform:scale(0)}60%{transform:scale(1.35)}to{transform:scale(1)}}
+.pin em{position:absolute;right:-6px;top:-6px;background:var(--c);color:#fff;font:700 10px Arial;border-radius:9px;padding:1px 5px;font-style:normal}
+.pp b{font-size:14px}.pp .m{font-size:12px;color:#555;margin:2px 0 8px}.pp button{font:inherit;font-size:13px;font-weight:700;border-radius:8px;border:1px solid #ccc;background:#f4f4fa;padding:7px 9px;margin:0 4px 4px 0;cursor:pointer}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2e2b6b;color:#fff;padding:11px 16px;border-radius:12px;font-size:14px;z-index:9999;display:none;max-width:90vw;text-align:center}
 a{color:var(--ind2)}
+@media(min-width:900px){.app{flex-direction:row-reverse}#sheet{width:420px;max-height:none;border-top:0;border-right:1px solid var(--ln)}}
+:focus-visible{outline:3px solid var(--ind2);outline-offset:2px}
 </style></head><body>
-<header><b>MOVI-INFO · Mapa real</b><span id="gps">GPS: buscando…</span></header>
-<div id="map"></div>
-<section id="panel">
- <div class="card"><div class="row"><div><div class="mu">Clima ahora</div><div class="big" id="temp">–</div></div><div style="text-align:right"><div id="wdesc" style="font-weight:700">Cargando…</div><div class="mu" id="wdet"></div></div></div>
-  <div id="tip" style="margin-top:8px;font-size:14px"></div>
-  <div class="mu" style="margin-top:6px"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a></div></div>
- <div class="card"><div class="row"><div><div class="mu">Estado de la vía donde estás</div><div id="tr" style="font-weight:700">–</div></div><span class="tag" id="trt">sin datos</span></div><div class="mu" id="trd"></div></div>
- <div class="card"><div class="mu" style="margin-bottom:8px">Reportar en tu ubicación (se guarda en este dispositivo)</div>
-  <div class="btns" id="rb"></div><button class="c" id="ctr">Centrar en mi ubicación</button></div>
-</section>
+<header><div><b>MOVI-INFO</b><small>Reportes de la comunidad para mover mejor la ciudad</small></div>
+ <div class="chips"><span class="chip" id="live">conectando…</span><span class="chip" id="gps">GPS…</span></div></header>
+<div class="app">
+ <div id="mapw"><div id="map"></div><div id="rain"></div><div id="cross"><i></i></div></div>
+ <section id="sheet">
+  <div class="tabs" role="tablist"><button role="tab" data-t="p1" aria-selected="true">Ahora</button><button role="tab" data-t="p2" aria-selected="false">Reportar</button><button role="tab" data-t="p3" aria-selected="false">Impacto</button></div>
+  <div class="pane on" id="p1">
+   <div id="setup" class="card" style="display:none;border-color:var(--rd)"><h3>Falta conectar la base de datos</h3><div class="mu">Pega tus claves de Supabase en CONFIG (SUPABASE_URL y SUPABASE_KEY) para que los reportes sean compartidos.</div></div>
+   <div class="card rec l0" id="rec"><div class="t">Calculando…</div></div>
+   <div class="card"><div class="row"><div><div class="mu">Clima ahora</div><div class="big" id="temp">–</div></div><div style="text-align:right"><div id="wdesc" style="font-weight:700">Cargando…</div><div class="mu" id="wdet"></div></div></div>
+    <div class="mu" style="margin-top:6px"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a></div></div>
+   <div class="card"><div class="row"><div><div class="mu">Tráfico donde estás (TomTom)</div><div id="tr" style="font-weight:700">–</div></div><span class="chip" id="trt" style="background:#888;color:#fff">sin datos</span></div><div class="mu" id="trd"></div></div>
+   <div class="mu" style="text-align:center">Los reportes caducan solos y la comunidad los confirma o los descarta. Sin registro: no guardamos tu identidad ni seguimos tu ubicación.</div>
+  </div>
+  <div class="pane" id="p2">
+   <div class="mu" style="margin-bottom:6px">Ubicación del reporte</div>
+   <div class="seg"><button id="mg" aria-pressed="true">📍 Mi GPS</button><button id="mc" aria-pressed="false">🎯 Centro del mapa</button></div>
+   <div class="rgrid" id="rg"></div>
+   <div class="mu" style="margin-top:10px">Si ya hay un reporte igual a menos de 120 m, tu toque lo <b>confirma</b> en vez de duplicarlo. Toca un ícono del mapa para confirmar o descartar reportes.</div>
+  </div>
+  <div class="pane" id="p3">
+   <div class="card"><h3>Comunidad (últimos 7 días)</h3><div class="kpis"><div class="kpi"><b id="k1">–</b><span>reportes</span></div><div class="kpi"><b id="k2">–</b><span>confirmaciones</span></div><div class="kpi"><b id="k3">–</b><span>activos ahora</span></div></div>
+    <div id="tbars" style="margin-top:10px"></div></div>
+   <div class="card"><h3>Horas con más congestión y accidentes</h3><div class="bars" id="hbars"></div><div class="axis"><span>0 h</span><span>6 h</span><span>12 h</span><span>18 h</span><span>23 h</span></div></div>
+   <div class="card"><h3>ECO-MOV · CO₂ evitado (estimado)</h3>
+    <div class="kpis"><div class="kpi"><b id="e1">–</b><span>min evitados</span></div><div class="kpi"><b id="e2">–</b><span>L combustible</span></div><div class="kpi"><b id="e3">–</b><span>kg CO₂</span></div></div>
+    <div class="mu" style="margin:8px 0 6px">Hoy, gracias a la app, evité estar parado en el tráfico unos:</div>
+    <div class="row"><select id="emin"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>30</option></select><span>minutos</span></div>
+    <button class="go" id="egb">Registrar mi ahorro</button>
+    <div class="mu" style="margin-top:8px" id="eform"></div></div>
+  </div>
+ </section>
+</div>
+<div class="toast" id="toast" role="status"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
 <script>
-// ====== CONFIGURACIÓN ======
-const CONFIG={TOMTOM_KEY:'SkUW3ZsjyYgWa1UtGcFAJnHKevXiRnP3',      // pega aquí tu clave de TomTom para ver el tráfico real
- CENTER:[11.2408,-74.1990]};      // Santa Marta, por si el GPS no está disponible
-// ===========================
+// ================= CONFIGURACIÓN (pega tus claves entre las comillas) =================
+const CONFIG={
+ TOMTOM_KEY:'<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2e2b6b">
+<title>MOVI-INFO · Reportes de movilidad</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{--ind:#2e2b6b;--ind2:#3b3a8c;--gr:#1e6b3a;--lgr:#ddf3e4;--bg:#f3f2fb;--card:#fff;--tx:#1d1b3a;--mu:#5f5c86;--ln:#dcdaf0;--am:#a86a0a;--lam:#fff1d6;--rd:#b53030;--lrd:#fbe3e3}
+@media(prefers-color-scheme:dark){:root{--bg:#14132b;--card:#1e1d3d;--tx:#ecebff;--mu:#aeacd4;--ln:#34326a;--ind:#c9c7f5;--ind2:#9d9bf0;--gr:#6fd596;--lgr:#173a27;--am:#f0b64d;--lam:#3d2f12;--rd:#f19a9a;--lrd:#411d1d}}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{display:flex;flex-direction:column;background:var(--bg);color:var(--tx);font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif;padding-top:env(safe-area-inset-top,0)}
+header{background:#2e2b6b;color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+header b{font-size:18px;letter-spacing:.2px}header small{display:block;font-size:11px;opacity:.85;font-weight:400}
+.chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.chip{font-size:11px;font-weight:700;padding:4px 9px;border-radius:99px;background:rgba(255,255,255,.18);white-space:nowrap}
+.chip.ok{background:#2faa5b}.chip.warn{background:#d68b0a}.chip.bad{background:#d64545}
+.app{flex:1;min-height:0;display:flex;flex-direction:column}
+#mapw{flex:1;min-height:180px;position:relative}#map{position:absolute;inset:0}
+#rain{position:absolute;inset:0;z-index:500;pointer-events:none;display:none;background:linear-gradient(105deg,transparent 48%,rgba(150,185,235,.5) 49%,transparent 50%) 0 0/22px 38px;animation:fall .5s linear infinite;opacity:.5}
+@keyframes fall{to{background-position:-8px 38px}}
+#cross{position:absolute;left:50%;top:50%;z-index:600;width:34px;height:34px;margin:-17px 0 0 -17px;pointer-events:none;display:none}
+#cross::before,#cross::after{content:"";position:absolute;background:#2e2b6b;border-radius:2px}
+#cross::before{left:16px;top:0;width:3px;height:34px}#cross::after{top:16px;left:0;height:3px;width:34px}
+#cross i{position:absolute;inset:9px;border:3px solid #2e2b6b;border-radius:50%;background:rgba(255,255,255,.6)}
+#sheet{background:var(--bg);border-top:1px solid var(--ln);max-height:52%;display:flex;flex-direction:column;min-height:0}
+.tabs{display:flex;background:var(--card);border-bottom:1px solid var(--ln)}
+.tabs button{flex:1;border:0;background:none;color:var(--mu);font:inherit;font-weight:700;font-size:14px;padding:12px 4px;border-bottom:3px solid transparent;cursor:pointer}
+.tabs button[aria-selected=true]{color:var(--ind);border-bottom-color:var(--gr)}
+.pane{overflow-y:auto;padding:12px 12px calc(14px + env(safe-area-inset-bottom,0));display:none}.pane.on{display:block}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mu{color:var(--mu);font-size:12px}.big{font-size:28px;font-weight:700}
+h3{margin:0 0 6px;font-size:14px;color:var(--ind)}
+.rec{border-left:6px solid var(--c);}.rec .t{font-size:17px;font-weight:700;color:var(--c)}
+.l0{--c:var(--gr)}.l1{--c:var(--am)}.l2{--c:var(--rd)}
+.rec ul{margin:8px 0 0;padding-left:18px;font-size:13px}.rec li{margin:3px 0}
+button.act{font:inherit;cursor:pointer}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rbtn{background:var(--card);color:var(--tx);border:2px solid var(--ln);border-left:6px solid var(--c);border-radius:12px;padding:10px 8px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;min-height:64px;display:flex;align-items:center;gap:8px;text-align:left}
+.rbtn span{font-size:24px}.rbtn:active{background:var(--lgr)}
+.seg{display:flex;gap:6px;margin-bottom:10px}.seg button{flex:1;font:inherit;font-size:12px;font-weight:700;padding:9px 4px;border-radius:10px;border:2px solid var(--ln);background:var(--card);color:var(--tx);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ind2);border-color:var(--ind2);color:#fff}
+select{font:inherit;padding:10px;border-radius:10px;border:1px solid var(--ln);background:var(--bg);color:var(--tx)}
+.go{width:100%;margin-top:8px;background:var(--gr);color:#fff;border:0;border-radius:12px;padding:12px;font:inherit;font-weight:700;font-size:15px;cursor:pointer}
+.go:disabled{opacity:.5}
+.kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.kpi{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:10px 6px;text-align:center}.kpi b{display:block;font-size:20px}.kpi span{font-size:11px;color:var(--mu)}
+.bars{display:flex;align-items:flex-end;gap:2px;height:80px;margin-top:8px}.bars i{flex:1;background:var(--ind2);border-radius:3px 3px 0 0;min-height:2px}
+.axis{display:flex;justify-content:space-between;font-size:10px;color:var(--mu);margin-top:2px}
+.hb{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px}.hb div{flex:1;height:10px;background:var(--ln);border-radius:6px;overflow:hidden}.hb i{display:block;height:100%;background:var(--c)}
+.pin{width:36px;height:36px;border-radius:50%;background:#fff;border:3px solid var(--c);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 6px rgba(0,0,0,.35);position:relative}
+.pin.new{animation:pop .5s ease-out}@keyframes pop{from{transform:scale(0)}60%{transform:scale(1.35)}to{transform:scale(1)}}
+.pin em{position:absolute;right:-6px;top:-6px;background:var(--c);color:#fff;font:700 10px Arial;border-radius:9px;padding:1px 5px;font-style:normal}
+.pp b{font-size:14px}.pp .m{font-size:12px;color:#555;margin:2px 0 8px}.pp button{font:inherit;font-size:13px;font-weight:700;border-radius:8px;border:1px solid #ccc;background:#f4f4fa;padding:7px 9px;margin:0 4px 4px 0;cursor:pointer}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2e2b6b;color:#fff;padding:11px 16px;border-radius:12px;font-size:14px;z-index:9999;display:none;max-width:90vw;text-align:center}
+a{color:var(--ind2)}
+@media(min-width:900px){.app{flex-direction:row-reverse}#sheet{width:420px;max-height:none;border-top:0;border-right:1px solid var(--ln)}}
+:focus-visible{outline:3px solid var(--ind2);outline-offset:2px}
+</style></head><body>
+<header><div><b>MOVI-INFO</b><small>Reportes de la comunidad para mover mejor la ciudad</small></div>
+ <div class="chips"><span class="chip" id="live">conectando…</span><span class="chip" id="gps">GPS…</span></div></header>
+<div class="app">
+ <div id="mapw"><div id="map"></div><div id="rain"></div><div id="cross"><i></i></div></div>
+ <section id="sheet">
+  <div class="tabs" role="tablist"><button role="tab" data-t="p1" aria-selected="true">Ahora</button><button role="tab" data-t="p2" aria-selected="false">Reportar</button><button role="tab" data-t="p3" aria-selected="false">Impacto</button></div>
+  <div class="pane on" id="p1">
+   <div id="setup" class="card" style="display:none;border-color:var(--rd)"><h3>Falta conectar la base de datos</h3><div class="mu">Pega tus claves de Supabase en CONFIG (SUPABASE_URL y SUPABASE_KEY) para que los reportes sean compartidos.</div></div>
+   <div class="card rec l0" id="rec"><div class="t">Calculando…</div></div>
+   <div class="card"><div class="row"><div><div class="mu">Clima ahora</div><div class="big" id="temp">–</div></div><div style="text-align:right"><div id="wdesc" style="font-weight:700">Cargando…</div><div class="mu" id="wdet"></div></div></div>
+    <div class="mu" style="margin-top:6px"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a></div></div>
+   <div class="card"><div class="row"><div><div class="mu">Tráfico donde estás (TomTom)</div><div id="tr" style="font-weight:700">–</div></div><span class="chip" id="trt" style="background:#888;color:#fff">sin datos</span></div><div class="mu" id="trd"></div></div>
+   <div class="mu" style="text-align:center">Los reportes caducan solos y la comunidad los confirma o los descarta. Sin registro: no guardamos tu identidad ni seguimos tu ubicación.</div>
+  </div>
+  <div class="pane" id="p2">
+   <div class="mu" style="margin-bottom:6px">Ubicación del reporte</div>
+   <div class="seg"><button id="mg" aria-pressed="true">📍 Mi GPS</button><button id="mc" aria-pressed="false">🎯 Centro del mapa</button></div>
+   <div class="rgrid" id="rg"></div>
+   <div class="mu" style="margin-top:10px">Si ya hay un reporte igual a menos de 120 m, tu toque lo <b>confirma</b> en vez de duplicarlo. Toca un ícono del mapa para confirmar o descartar reportes.</div>
+  </div>
+  <div class="pane" id="p3">
+   <div class="card"><h3>Comunidad (últimos 7 días)</h3><div class="kpis"><div class="kpi"><b id="k1">–</b><span>reportes</span></div><div class="kpi"><b id="k2">–</b><span>confirmaciones</span></div><div class="kpi"><b id="k3">–</b><span>activos ahora</span></div></div>
+    <div id="tbars" style="margin-top:10px"></div></div>
+   <div class="card"><h3>Horas con más congestión y accidentes</h3><div class="bars" id="hbars"></div><div class="axis"><span>0 h</span><span>6 h</span><span>12 h</span><span>18 h</span><span>23 h</span></div></div>
+   <div class="card"><h3>ECO-MOV · CO₂ evitado (estimado)</h3>
+    <div class="kpis"><div class="kpi"><b id="e1">–</b><span>min evitados</span></div><div class="kpi"><b id="e2">–</b><span>L combustible</span></div><div class="kpi"><b id="e3">–</b><span>kg CO₂</span></div></div>
+    <div class="mu" style="margin:8px 0 6px">Hoy, gracias a la app, evité estar parado en el tráfico unos:</div>
+    <div class="row"><select id="emin"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>30</option></select><span>minutos</span></div>
+    <button class="go" id="egb">Registrar mi ahorro</button>
+    <div class="mu" style="margin-top:8px" id="eform"></div></div>
+  </div>
+ </section>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
+<script>
+// ================= CONFIGURACIÓN (pega tus claves entre las comillas) =================
+const CONFIG={
+ TOMTOM_KEY:'<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2e2b6b">
+<title>MOVI-INFO · Reportes de movilidad</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{--ind:#2e2b6b;--ind2:#3b3a8c;--gr:#1e6b3a;--lgr:#ddf3e4;--bg:#f3f2fb;--card:#fff;--tx:#1d1b3a;--mu:#5f5c86;--ln:#dcdaf0;--am:#a86a0a;--lam:#fff1d6;--rd:#b53030;--lrd:#fbe3e3}
+@media(prefers-color-scheme:dark){:root{--bg:#14132b;--card:#1e1d3d;--tx:#ecebff;--mu:#aeacd4;--ln:#34326a;--ind:#c9c7f5;--ind2:#9d9bf0;--gr:#6fd596;--lgr:#173a27;--am:#f0b64d;--lam:#3d2f12;--rd:#f19a9a;--lrd:#411d1d}}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{display:flex;flex-direction:column;background:var(--bg);color:var(--tx);font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif;padding-top:env(safe-area-inset-top,0)}
+header{background:#2e2b6b;color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+header b{font-size:18px;letter-spacing:.2px}header small{display:block;font-size:11px;opacity:.85;font-weight:400}
+.chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.chip{font-size:11px;font-weight:700;padding:4px 9px;border-radius:99px;background:rgba(255,255,255,.18);white-space:nowrap}
+.chip.ok{background:#2faa5b}.chip.warn{background:#d68b0a}.chip.bad{background:#d64545}
+.app{flex:1;min-height:0;display:flex;flex-direction:column}
+#mapw{flex:1;min-height:180px;position:relative}#map{position:absolute;inset:0}
+#rain{position:absolute;inset:0;z-index:500;pointer-events:none;display:none;background:linear-gradient(105deg,transparent 48%,rgba(150,185,235,.5) 49%,transparent 50%) 0 0/22px 38px;animation:fall .5s linear infinite;opacity:.5}
+@keyframes fall{to{background-position:-8px 38px}}
+#cross{position:absolute;left:50%;top:50%;z-index:600;width:34px;height:34px;margin:-17px 0 0 -17px;pointer-events:none;display:none}
+#cross::before,#cross::after{content:"";position:absolute;background:#2e2b6b;border-radius:2px}
+#cross::before{left:16px;top:0;width:3px;height:34px}#cross::after{top:16px;left:0;height:3px;width:34px}
+#cross i{position:absolute;inset:9px;border:3px solid #2e2b6b;border-radius:50%;background:rgba(255,255,255,.6)}
+#sheet{background:var(--bg);border-top:1px solid var(--ln);max-height:52%;display:flex;flex-direction:column;min-height:0}
+.tabs{display:flex;background:var(--card);border-bottom:1px solid var(--ln)}
+.tabs button{flex:1;border:0;background:none;color:var(--mu);font:inherit;font-weight:700;font-size:14px;padding:12px 4px;border-bottom:3px solid transparent;cursor:pointer}
+.tabs button[aria-selected=true]{color:var(--ind);border-bottom-color:var(--gr)}
+.pane{overflow-y:auto;padding:12px 12px calc(14px + env(safe-area-inset-bottom,0));display:none}.pane.on{display:block}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mu{color:var(--mu);font-size:12px}.big{font-size:28px;font-weight:700}
+h3{margin:0 0 6px;font-size:14px;color:var(--ind)}
+.rec{border-left:6px solid var(--c);}.rec .t{font-size:17px;font-weight:700;color:var(--c)}
+.l0{--c:var(--gr)}.l1{--c:var(--am)}.l2{--c:var(--rd)}
+.rec ul{margin:8px 0 0;padding-left:18px;font-size:13px}.rec li{margin:3px 0}
+button.act{font:inherit;cursor:pointer}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rbtn{background:var(--card);color:var(--tx);border:2px solid var(--ln);border-left:6px solid var(--c);border-radius:12px;padding:10px 8px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;min-height:64px;display:flex;align-items:center;gap:8px;text-align:left}
+.rbtn span{font-size:24px}.rbtn:active{background:var(--lgr)}
+.seg{display:flex;gap:6px;margin-bottom:10px}.seg button{flex:1;font:inherit;font-size:12px;font-weight:700;padding:9px 4px;border-radius:10px;border:2px solid var(--ln);background:var(--card);color:var(--tx);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ind2);border-color:var(--ind2);color:#fff}
+select{font:inherit;padding:10px;border-radius:10px;border:1px solid var(--ln);background:var(--bg);color:var(--tx)}
+.go{width:100%;margin-top:8px;background:var(--gr);color:#fff;border:0;border-radius:12px;padding:12px;font:inherit;font-weight:700;font-size:15px;cursor:pointer}
+.go:disabled{opacity:.5}
+.kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.kpi{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:10px 6px;text-align:center}.kpi b{display:block;font-size:20px}.kpi span{font-size:11px;color:var(--mu)}
+.bars{display:flex;align-items:flex-end;gap:2px;height:80px;margin-top:8px}.bars i{flex:1;background:var(--ind2);border-radius:3px 3px 0 0;min-height:2px}
+.axis{display:flex;justify-content:space-between;font-size:10px;color:var(--mu);margin-top:2px}
+.hb{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px}.hb div{flex:1;height:10px;background:var(--ln);border-radius:6px;overflow:hidden}.hb i{display:block;height:100%;background:var(--c)}
+.pin{width:36px;height:36px;border-radius:50%;background:#fff;border:3px solid var(--c);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 6px rgba(0,0,0,.35);position:relative}
+.pin.new{animation:pop .5s ease-out}@keyframes pop{from{transform:scale(0)}60%{transform:scale(1.35)}to{transform:scale(1)}}
+.pin em{position:absolute;right:-6px;top:-6px;background:var(--c);color:#fff;font:700 10px Arial;border-radius:9px;padding:1px 5px;font-style:normal}
+.pp b{font-size:14px}.pp .m{font-size:12px;color:#555;margin:2px 0 8px}.pp button{font:inherit;font-size:13px;font-weight:700;border-radius:8px;border:1px solid #ccc;background:#f4f4fa;padding:7px 9px;margin:0 4px 4px 0;cursor:pointer}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2e2b6b;color:#fff;padding:11px 16px;border-radius:12px;font-size:14px;z-index:9999;display:none;max-width:90vw;text-align:center}
+a{color:var(--ind2)}
+@media(min-width:900px){.app{flex-direction:row-reverse}#sheet{width:420px;max-height:none;border-top:0;border-right:1px solid var(--ln)}}
+:focus-visible{outline:3px solid var(--ind2);outline-offset:2px}
+</style></head><body>
+<header><div><b>MOVI-INFO</b><small>Reportes de la comunidad para mover mejor la ciudad</small></div>
+ <div class="chips"><span class="chip" id="live">conectando…</span><span class="chip" id="gps">GPS…</span></div></header>
+<div class="app">
+ <div id="mapw"><div id="map"></div><div id="rain"></div><div id="cross"><i></i></div></div>
+ <section id="sheet">
+  <div class="tabs" role="tablist"><button role="tab" data-t="p1" aria-selected="true">Ahora</button><button role="tab" data-t="p2" aria-selected="false">Reportar</button><button role="tab" data-t="p3" aria-selected="false">Impacto</button></div>
+  <div class="pane on" id="p1">
+   <div id="setup" class="card" style="display:none;border-color:var(--rd)"><h3>Falta conectar la base de datos</h3><div class="mu">Pega tus claves de Supabase en CONFIG (SUPABASE_URL y SUPABASE_KEY) para que los reportes sean compartidos.</div></div>
+   <div class="card rec l0" id="rec"><div class="t">Calculando…</div></div>
+   <div class="card"><div class="row"><div><div class="mu">Clima ahora</div><div class="big" id="temp">–</div></div><div style="text-align:right"><div id="wdesc" style="font-weight:700">Cargando…</div><div class="mu" id="wdet"></div></div></div>
+    <div class="mu" style="margin-top:6px"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a></div></div>
+   <div class="card"><div class="row"><div><div class="mu">Tráfico donde estás (TomTom)</div><div id="tr" style="font-weight:700">–</div></div><span class="chip" id="trt" style="background:#888;color:#fff">sin datos</span></div><div class="mu" id="trd"></div></div>
+   <div class="mu" style="text-align:center">Los reportes caducan solos y la comunidad los confirma o los descarta. Sin registro: no guardamos tu identidad ni seguimos tu ubicación.</div>
+  </div>
+  <div class="pane" id="p2">
+   <div class="mu" style="margin-bottom:6px">Ubicación del reporte</div>
+   <div class="seg"><button id="mg" aria-pressed="true">📍 Mi GPS</button><button id="mc" aria-pressed="false">🎯 Centro del mapa</button></div>
+   <div class="rgrid" id="rg"></div>
+   <div class="mu" style="margin-top:10px">Si ya hay un reporte igual a menos de 120 m, tu toque lo <b>confirma</b> en vez de duplicarlo. Toca un ícono del mapa para confirmar o descartar reportes.</div>
+  </div>
+  <div class="pane" id="p3">
+   <div class="card"><h3>Comunidad (últimos 7 días)</h3><div class="kpis"><div class="kpi"><b id="k1">–</b><span>reportes</span></div><div class="kpi"><b id="k2">–</b><span>confirmaciones</span></div><div class="kpi"><b id="k3">–</b><span>activos ahora</span></div></div>
+    <div id="tbars" style="margin-top:10px"></div></div>
+   <div class="card"><h3>Horas con más congestión y accidentes</h3><div class="bars" id="hbars"></div><div class="axis"><span>0 h</span><span>6 h</span><span>12 h</span><span>18 h</span><span>23 h</span></div></div>
+   <div class="card"><h3>ECO-MOV · CO₂ evitado (estimado)</h3>
+    <div class="kpis"><div class="kpi"><b id="e1">–</b><span>min evitados</span></div><div class="kpi"><b id="e2">–</b><span>L combustible</span></div><div class="kpi"><b id="e3">–</b><span>kg CO₂</span></div></div>
+    <div class="mu" style="margin:8px 0 6px">Hoy, gracias a la app, evité estar parado en el tráfico unos:</div>
+    <div class="row"><select id="emin"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>30</option></select><span>minutos</span></div>
+    <button class="go" id="egb">Registrar mi ahorro</button>
+    <div class="mu" style="margin-top:8px" id="eform"></div></div>
+  </div>
+ </section>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
+<script>
+// ================= CONFIGURACIÓN (pega tus claves entre las comillas) =================
+const CONFIG={
+ TOMTOM_KEY:'SkUW3ZsjyYgWa1UtGcFAJnHKevXiRnP3',
+ SUPABASE_URL:' https://fzmjnuvfpnoqlnohffqe.supabase.co',   // ej: https://abcd1234.supabase.co
+ SUPABASE_KEY:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6bWpudXZmcG5vcWxub2hmZnFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3MTAwMzgsImV4cCI6MjEwODI4NjAzOH0.bjFv6KmknceaFaalbD4qVzWucAocL4NR1gJGVtVkVpE
+',   // clave "anon public"
+ CENTER:[11.2408,-74.1990],
+ // Supuestos del contador ECO-MOV (estimación, no medición):
+ IDLE_L_H:1.14,     // L/h en ralentí: 0,3 gal/h, carro de pasajeros (Argonne / DOE-AFDC)
+ KG_CO2_L:2.35      // kg CO2 por litro de gasolina: 8.887 g/galón (EPA)
+};
+// ======================================================================================
 const $=s=>document.querySelector(s);
+const LS={get(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+let DEV=LS.get('mov_dev','');if(!DEV){DEV='d'+Math.random().toString(36).slice(2,12);LS.set('mov_dev',DEV)}
+let MYV={};try{MYV=JSON.parse(LS.get('mov_votos','{}'))}catch(e){}
+const saveV=()=>LS.set('mov_votos',JSON.stringify(MYV));
+const TP=[{k:'Congestión',e:'🚗',c:'#e5a524',ttl:45},{k:'Accidente',e:'⚠️',c:'#d64545',ttl:120},{k:'Obra o cierre',e:'🚧',c:'#ea580c',ttl:240},
+ {k:'Parqueo lleno',e:'🅿️',c:'#9333ea',ttl:30},{k:'Parqueo libre',e:'🅿️',c:'#16a34a',ttl:30},{k:'Lluvia o inundación',e:'🌧️',c:'#2563eb',ttl:90}];
+let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>t.style.display='none',2800)}
+const ago=t=>{const m=Math.max(0,Math.round((Date.now()-t)/6e4));return m<1?'ahora':m<60?`hace ${m} min`:`hace ${Math.round(m/60)} h`};
+const fmtD=m=>m<1000?Math.round(m/10)*10+' m':(m/1000).toFixed(1).replace('.',',')+' km';
+
+// ---------- Mapa ----------
 const map=L.map('map',{zoomControl:false}).setView(CONFIG.CENTER,14);
 L.control.zoom({position:'topright'}).addTo(map);
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);
-if(CONFIG.TOMTOM_KEY)L.tileLayer(`https://api.tomtom.com/traffic/map/4/tile/flow/relative/{z}/{x}/{y}.png?key=${CONFIG.TOMTOM_KEY}`,{opacity:.85,maxZoom:18}).addTo(map);
+if(CONFIG.TOMTOM_KEY)L.tileLayer(`https://api.tomtom.com/traffic/map/4/tile/flow/relative/{z}/{x}/{y}.png?key=${CONFIG.TOMTOM_KEY}`,{opacity:.85,maxZoom:18,attribution:'Tráfico &copy; TomTom'}).addTo(map);
+const layer=L.layerGroup().addTo(map);
+addEventListener('resize',()=>map.invalidateSize());
 
-let me,acc,pos,first=true;
+const sb=(CONFIG.SUPABASE_URL&&CONFIG.SUPABASE_KEY&&window.supabase)?supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_KEY):null;
+const setLive=(t,c)=>{const e=$('#live');e.textContent=t;e.className='chip '+(c||'')};
+if(!sb){setLive('sin base de datos','bad');$('#setup').style.display='block'}
+
+// ---------- GPS ----------
+let pos=null,acc=null,first=true,MODE='gps',me=null;
 function here(){return pos||[map.getCenter().lat,map.getCenter().lng]}
-function onPos(p){pos=[p.coords.latitude,p.coords.longitude];
- if(!me){me=L.circleMarker(pos,{radius:8,color:'#fff',weight:3,fillColor:'#2563eb',fillOpacity:1}).addTo(map);acc=L.circle(pos,{radius:p.coords.accuracy,color:'#2563eb',weight:1,fillOpacity:.1}).addTo(map)}
- else{me.setLatLng(pos);acc.setLatLng(pos);acc.setRadius(p.coords.accuracy)}
- $('#gps').textContent='GPS activo ±'+Math.round(p.coords.accuracy)+' m';
- if(first){first=false;map.setView(pos,16);weather();traffic()}}
-function noPos(e){$('#gps').textContent='GPS no disponible';if(first){first=false;weather();traffic()}}
-if(navigator.geolocation)navigator.geolocation.watchPosition(onPos,noPos,{enableHighAccuracy:true,maximumAge:5000,timeout:15000});else noPos();
-$('#ctr').onclick=()=>pos?map.setView(pos,17):alert('Activa el permiso de ubicación (requiere HTTPS).');
+function onPos(p){pos=[p.coords.latitude,p.coords.longitude];acc=p.coords.accuracy;
+ if(!me)me=L.circleMarker(pos,{radius:8,color:'#fff',weight:3,fillColor:'#2563eb',fillOpacity:1}).addTo(map);else me.setLatLng(pos);
+ const g=$('#gps');g.textContent='GPS ±'+Math.round(acc)+' m';g.className='chip '+(acc<=60?'ok':acc<=200?'warn':'bad');
+ if(first){first=false;map.setView(pos,16);weather();traffic()}recompute()}
+function noPos(){const g=$('#gps');g.textContent='GPS no disponible';g.className='chip bad';if(first){first=false;setMode('center');weather();traffic()}}
+if(navigator.geolocation)navigator.geolocation.watchPosition(onPos,noPos,{enableHighAccuracy:true,maximumAge:3000,timeout:20000});else noPos();
+function setMode(m){MODE=m;$('#mg').setAttribute('aria-pressed',m==='gps');$('#mc').setAttribute('aria-pressed',m==='center');$('#cross').style.display=m==='center'?'block':'none'}
+$('#mg').onclick=()=>{if(!pos)return toast('Aún no hay GPS: usa "Centro del mapa"');setMode('gps')};
+$('#mc').onclick=()=>setMode('center');
 
-// ----- Clima (Open-Meteo, sin clave) -----
+// ---------- Reportes ----------
+const reps={};
+const alive=r=>(Date.now()-r.t)/6e4<TP[r.tipo].ttl&&!(r.no>=2&&r.no>r.ok);
+const mkIcon=(r,isNew)=>L.divIcon({className:'',iconSize:[36,36],iconAnchor:[18,18],html:`<div class="pin${isNew?' new':''}" style="--c:${TP[r.tipo].c}">${TP[r.tipo].e}${r.ok>0?`<em>${r.ok}</em>`:''}</div>`});
+function popup(r){const t=TP[r.tipo],d=document.createElement('div');d.className='pp';
+ d.innerHTML=`<b>${t.e} ${t.k}</b><div class="m">${ago(r.t)} · ${r.ok} confirman · ${r.no} dicen que ya pasó</div>`;
+ if(r.disp===DEV){const s=document.createElement('div');s.className='m';s.textContent='Este reporte es tuyo.';d.appendChild(s)}
+ else if(MYV[r.id]){const s=document.createElement('div');s.className='m';s.textContent=MYV[r.id]>0?'Ya lo confirmaste.':'Ya dijiste que pasó.';d.appendChild(s)}
+ else{[['👍 Sigue ahí',1],['✔️ Ya pasó',-1]].forEach(([l,v])=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>{vote(r,v);r.m&&r.m.closePopup()};d.appendChild(b)})}
+ return d}
+function draw(r,isNew){r.m=L.marker([r.lat,r.lng],{icon:mkIcon(r,isNew)}).addTo(layer).bindPopup(()=>popup(r))}
+function refresh(r){if(alive(r)){if(r.m)r.m.setIcon(mkIcon(r));else draw(r)}else if(r.m){layer.removeLayer(r.m);r.m=null}}
+function addRep(x,isNew){if(reps[x.id])return;const r={id:x.id,tipo:x.tipo,lat:x.lat,lng:x.lng,disp:x.dispositivo,t:Date.parse(x.created_at),ok:0,no:0};reps[r.id]=r;if(alive(r))draw(r,isNew)}
+async function vote(r,v){if(!sb)return;const x=await sb.from('confirmaciones').insert({reporte_id:r.id,dispositivo:DEV,voto:v});
+ if(x.error){toast('No se pudo registrar tu voto');return}
+ MYV[r.id]=v;saveV();v>0?r.ok++:r.no++;refresh(r);recompute();toast(v>0?'Confirmaste el reporte':'Marcaste que ya pasó')}
+let lastR=0;
+async function report(tipo){if(!sb){toast('Falta conectar la base de datos');return}
+ if(Date.now()-lastR<20000){toast('Espera unos segundos antes de otro reporte');return}
+ let lat,lng;if(MODE==='gps'){if(!pos){toast('Sin GPS: usa "Centro del mapa"');return}[lat,lng]=pos}else{const c=map.getCenter();lat=c.lat;lng=c.lng}
+ const dup=Object.values(reps).find(r=>r.tipo===tipo&&alive(r)&&map.distance([lat,lng],[r.lat,r.lng])<120);
+ if(dup){if(dup.disp===DEV){toast('Ya reportaste esto aquí');return}if(MYV[dup.id]){toast('Ya confirmaste este reporte');return}lastR=Date.now();await vote(dup,1);return}
+ const x=await sb.from('reportes').insert({tipo,lat,lng,dispositivo:DEV}).select().single();
+ if(x.error||!x.data){toast('No se pudo enviar el reporte');return}
+ lastR=Date.now();addRep(x.data,true);recompute();toast('Reporte enviado: '+TP[tipo].k)}
+$('#rg').innerHTML=TP.map((t,i)=>`<button class="rbtn" data-k="${i}" style="--c:${t.c}"><span>${t.e}</span>${t.k}</button>`).join('');
+$('#rg').onclick=e=>{const b=e.target.closest('button');if(b)report(+b.dataset.k)};
+setInterval(()=>{Object.values(reps).forEach(refresh);recompute()},30000);
+
+async function load(){if(!sb)return;const since=new Date(Date.now()-4*36e5).toISOString();
+ const a=await sb.from('reportes').select('*').gte('created_at',since).order('created_at').limit(500);
+ if(a.error){setLive('error de datos','bad');return}
+ a.data.forEach(x=>addRep(x));const ids=a.data.map(x=>x.id);
+ if(ids.length){const b=await sb.from('confirmaciones').select('reporte_id,voto').in('reporte_id',ids);(b.data||[]).forEach(c=>{const r=reps[c.reporte_id];if(r)c.voto>0?r.ok++:r.no++})}
+ Object.values(reps).forEach(refresh);recompute();
+ sb.channel('mov').on('postgres_changes',{event:'INSERT',schema:'public',table:'reportes'},p=>{addRep(p.new,true);recompute()})
+  .on('postgres_changes',{event:'INSERT',schema:'public',table:'confirmaciones'},p=>{const c=p.new;if(c.dispositivo===DEV)return;const r=reps[c.reporte_id];if(!r)return;c.voto>0?r.ok++:r.no++;refresh(r);recompute()})
+  .subscribe(s=>{if(s==='SUBSCRIBED')setLive('en vivo','ok');else if(s==='CHANNEL_ERROR'||s==='TIMED_OUT'||s==='CLOSED')setLive('reconectando…','warn')})}
+load();
+
+// ---------- Clima y tráfico reales ----------
+let RAIN=false,FLOW=null;
 const WC=c=>c==0?['☀️','Despejado']:c<=3?['⛅','Parcialmente nublado']:c<=48?['🌫️','Niebla']:c<=57?['🌦️','Llovizna']:c<=67?['🌧️','Lluvia']:c<=82?['🌧️','Chubascos']:['⛈️','Tormenta'];
 async function weather(){try{const[a,b]=here();
  const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${a}&longitude=${b}&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,relative_humidity_2m&timezone=auto`);
- const c=(await r.json()).current,[ic,tx]=WC(c.weather_code);
- $('#temp').textContent=ic+' '+Math.round(c.temperature_2m)+'°C';$('#wdesc').textContent=tx;
- $('#wdet').textContent=`Sensación ${Math.round(c.apparent_temperature)}°C · Humedad ${c.relative_humidity_2m}% · Viento ${Math.round(c.wind_speed_10m)} km/h`;
- $('#tip').textContent=c.precipitation>0||c.weather_code>=51?'🌧️ Está lloviendo: sal unos 10 minutos antes y ten cuidado en las vías.':c.apparent_temperature>=34?'🥵 Calor fuerte: prefiere rutas con sombra o buses con aire acondicionado.':'👍 Buen clima para desplazarte.'}
+ const c=(await r.json()).current,[ic,tx]=WC(c.weather_code);RAIN=c.precipitation>0||c.weather_code>=51;
+ $('#rain').style.display=RAIN?'block':'none';$('#temp').textContent=ic+' '+Math.round(c.temperature_2m)+'°C';$('#wdesc').textContent=tx;
+ $('#wdet').textContent=`Sensación ${Math.round(c.apparent_temperature)}°C · Humedad ${c.relative_humidity_2m}% · Viento ${Math.round(c.wind_speed_10m)} km/h`;recompute()}
  catch(e){$('#wdesc').textContent='Sin conexión al clima'}}
-
-// ----- Tráfico (TomTom Flow Segment Data) -----
 async function traffic(){const t=$('#trt');
- if(!CONFIG.TOMTOM_KEY){$('#tr').textContent='Falta la clave de TomTom';$('#trd').textContent='Pégala en CONFIG.TOMTOM_KEY (arriba en el código) para ver el tráfico real.';return}
+ if(!CONFIG.TOMTOM_KEY){$('#tr').textContent='Falta la clave de TomTom';$('#trd').textContent='Pégala en CONFIG.TOMTOM_KEY.';return}
  try{const[a,b]=here();const r=await fetch(`https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json?key=${CONFIG.TOMTOM_KEY}&point=${a},${b}`);
- const f=(await r.json()).flowSegmentData,q=f.currentSpeed/f.freeFlowSpeed;
- const[s,c]=q>=.8?['Fluido','#2faa5b']:q>=.5?['Moderado','#e5a524']:['Congestionado','#d64545'];
+ const f=(await r.json()).flowSegmentData,q=f.currentSpeed/f.freeFlowSpeed;FLOW={q,cur:f.currentSpeed,free:f.freeFlowSpeed};
+ const[s,c]=q>=.8?['Fluido','#2faa5b']:q>=.5?['Moderado','#d68b0a']:['Congestionado','#d64545'];
  $('#tr').textContent=s;t.textContent=Math.round(f.currentSpeed)+' km/h';t.style.background=c;
- $('#trd').textContent=`Velocidad normal ${Math.round(f.freeFlowSpeed)} km/h · tiempo de recorrido ${f.currentTravelTime}s vs ${f.freeFlowTravelTime}s`}
+ $('#trd').textContent=`Velocidad normal ${Math.round(f.freeFlowSpeed)} km/h · recorrido ${f.currentTravelTime}s vs ${f.freeFlowTravelTime}s`;recompute()}
  catch(e){$('#tr').textContent='No se pudo leer el tráfico';$('#trd').textContent='Revisa tu clave de TomTom.'}}
 setInterval(()=>{weather();traffic()},120000);
 
-// ----- Reportes de usuarios (guardados en el dispositivo) -----
-const RT=[['🚗','Congestión'],['🅿️','Parqueo lleno'],['⚠️','Accidente'],['✅','Vía libre']];
-let reps=[];try{reps=JSON.parse(localStorage.getItem('mi_reps')||'[]').filter(r=>Date.now()-r.t<72e5)}catch(e){}
-const save=()=>{try{localStorage.setItem('mi_reps',JSON.stringify(reps))}catch(e){}};
-const draw=r=>L.marker([r.a,r.b],{icon:L.divIcon({html:`<div class="rp">${RT[r.k][0]}</div>`,className:'',iconSize:[26,26]})}).addTo(map).bindPopup(`${RT[r.k][1]} · ${new Date(r.t).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})}`);
-reps.forEach(draw);
-$('#rb').innerHTML=RT.map((r,i)=>`<button data-k="${i}"><div class="rp">${r[0]}</div>${r[1]}</button>`).join('');
-$('#rb').onclick=e=>{const b=e.target.closest('button');if(!b)return;const[a,c]=here(),r={k:+b.dataset.k,a,b:c,t:Date.now()};reps.push(r);save();draw(r)};
+// ---------- Recomendación (reglas simples y transparentes) ----------
+function recompute(){const c=pos||[map.getCenter().lat,map.getCenter().lng],R=1500;
+ const near=Object.values(reps).filter(r=>alive(r)&&map.distance(c,[r.lat,r.lng])<=R);
+ const n=t=>near.filter(r=>r.tipo===t).length,why=[];
+ let lvl=0;
+ if(n(1)>0||n(0)>=2||(FLOW&&FLOW.q<.5))lvl=2;else if(n(0)===1||n(2)>0||(FLOW&&FLOW.q<.8)||RAIN||n(5)>0)lvl=1;
+ if(n(1))why.push(`${n(1)} accidente${n(1)>1?'s':''} reportado${n(1)>1?'s':''} a menos de 1,5 km`);
+ if(n(0))why.push(`${n(0)} reporte${n(0)>1?'s':''} de congestión cerca`);
+ if(n(2))why.push(`${n(2)} obra${n(2)>1?'s':''} o cierre${n(2)>1?'s':''} cerca`);
+ if(FLOW)why.push(`TomTom: ${Math.round(FLOW.cur)} km/h de ${Math.round(FLOW.free)} km/h normales`);
+ if(RAIN)why.push('Está lloviendo: la velocidad baja y suben los frenazos');else if(n(5))why.push('Lluvia o inundación reportada cerca');
+ const T=['Vía despejada ahora. Buen momento para salir.','Tráfico moderado. Sal con unos 10 minutos de margen.','Tráfico pesado cerca. Si puedes, sal 15 minutos antes o después, o evita esta zona.'];
+ const fr=near.filter(r=>r.tipo===4).map(r=>({r,d:map.distance(c,[r.lat,r.lng])})).sort((a,b)=>a.d-b.d)[0];
+ const fu=near.filter(r=>r.tipo===3).map(r=>({r,d:map.distance(c,[r.lat,r.lng])})).sort((a,b)=>a.d-b.d)[0];
+ if(fr)why.push(`🅿️ Parqueo libre reportado a ${fmtD(fr.d)}`);else if(fu)why.push(`🅿️ Parqueo lleno a ${fmtD(fu.d)}: busca otra zona antes de dar vueltas`);
+ if(!why.length)why.push(sb?'Sin reportes cercanos en este momento':'Conecta la base de datos para ver reportes');
+ const el=$('#rec');el.className='card rec l'+lvl;
+ el.innerHTML=`<div class="t">${T[lvl]}</div><ul>${why.map(w=>`<li>${w.replace(/[<>&]/g,'')}</li>`).join('')}</ul><div class="mu" style="margin-top:6px">Basado en TomTom, el clima real y ${near.length} reporte${near.length===1?'':'s'} de la comunidad vigente${near.length===1?'':'s'} en 1,5 km.</div>`}
+
+// ---------- Impacto y ECO-MOV ----------
+const co2=min=>min/60*CONFIG.IDLE_L_H*CONFIG.KG_CO2_L;
+const fmt=(n,d=0)=>n.toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
+async function loadImpact(){$('#eform').textContent=`Fórmula: minutos ÷ 60 × ${fmt(CONFIG.IDLE_L_H,2)} L/h × ${fmt(CONFIG.KG_CO2_L,2)} kg CO₂/L. Es una estimación basada en minutos que cada persona declara; no es una medición.`;
+ if(!sb)return;
+ const s7=new Date(Date.now()-7*864e5).toISOString(),s30=new Date(Date.now()-30*864e5).toISOString();
+ const a=await sb.from('reportes').select('tipo,created_at').gte('created_at',s7).limit(5000);
+ if(!a.error){const d=a.data;$('#k1').textContent=fmt(d.length);
+  const cnt=TP.map((t,i)=>d.filter(x=>x.tipo===i).length),mx=Math.max(1,...cnt);
+  $('#tbars').innerHTML=TP.map((t,i)=>`<div class="hb" style="--c:${t.c}"><span style="width:150px">${t.e} ${t.k}</span><div><i style="width:${cnt[i]/mx*100}%"></i></div><b>${cnt[i]}</b></div>`).join('');
+  const hrs=Array(24).fill(0);d.filter(x=>x.tipo<=1).forEach(x=>{const h=+new Date(x.created_at).toLocaleString('en-GB',{hour:'2-digit',hour12:false,timeZone:'America/Bogota'})%24;hrs[h]++});
+  const hm=Math.max(1,...hrs);$('#hbars').innerHTML=hrs.map((v,h)=>`<i title="${h} h: ${v}" style="height:${Math.max(3,v/hm*100)}%"></i>`).join('')}
+ const b=await sb.from('confirmaciones').select('id',{count:'exact',head:true}).gte('created_at',s7);if(!b.error&&b.count!=null)$('#k2').textContent=fmt(b.count);
+ $('#k3').textContent=fmt(Object.values(reps).filter(alive).length);
+ const c=await sb.from('impacto').select('minutos').gte('created_at',s30).limit(5000);
+ if(!c.error){const m=c.data.reduce((a,x)=>a+x.minutos,0);$('#e1').textContent=fmt(m);$('#e2').textContent=fmt(m/60*CONFIG.IDLE_L_H,1);$('#e3').textContent=fmt(co2(m),1)}}
+$('#egb').onclick=async()=>{if(!sb){toast('Falta conectar la base de datos');return}
+ if(Date.now()-(+LS.get('mov_eco','0'))<3e5){toast('Ya registraste tu ahorro hace poco');return}
+ const minutos=+$('#emin').value,x=await sb.from('impacto').insert({dispositivo:DEV,minutos});
+ if(x.error){toast('No se pudo registrar');return}LS.set('mov_eco',String(Date.now()));toast(`Registrado: ≈ ${fmt(co2(minutos),2)} kg de CO₂ evitados`);loadImpact()};
+
+// ---------- Pestañas ----------
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+ document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id===b.dataset.t));if(b.dataset.t==='p3')loadImpact();setTimeout(()=>map.invalidateSize(),50)});
+recompute();
+</script></body></html>',
+ SUPABASE_URL:'',   // ej: https://abcd1234.supabase.co
+ SUPABASE_KEY:'',   // clave "anon public"
+ CENTER:[11.2408,-74.1990],
+ // Supuestos del contador ECO-MOV (estimación, no medición):
+ IDLE_L_H:1.14,     // L/h en ralentí: 0,3 gal/h, carro de pasajeros (Argonne / DOE-AFDC)
+ KG_CO2_L:2.35      // kg CO2 por litro de gasolina: 8.887 g/galón (EPA)
+};
+// ======================================================================================
+const $=s=>document.querySelector(s);
+const LS={get(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+let DEV=LS.get('mov_dev','');if(!DEV){DEV='d'+Math.random().toString(36).slice(2,12);LS.set('mov_dev',DEV)}
+let MYV={};try{MYV=JSON.parse(LS.get('mov_votos','{}'))}catch(e){}
+const saveV=()=>LS.set('mov_votos',JSON.stringify(MYV));
+const TP=[{k:'Congestión',e:'🚗',c:'#e5a524',ttl:45},{k:'Accidente',e:'⚠️',c:'#d64545',ttl:120},{k:'Obra o cierre',e:'🚧',c:'#ea580c',ttl:240},
+ {k:'Parqueo lleno',e:'🅿️',c:'#9333ea',ttl:30},{k:'Parqueo libre',e:'🅿️',c:'#16a34a',ttl:30},{k:'Lluvia o inundación',e:'🌧️',c:'#2563eb',ttl:90}];
+let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>t.style.display='none',2800)}
+const ago=t=>{const m=Math.max(0,Math.round((Date.now()-t)/6e4));return m<1?'ahora':m<60?`hace ${m} min`:`hace ${Math.round(m/60)} h`};
+const fmtD=m=>m<1000?Math.round(m/10)*10+' m':(m/1000).toFixed(1).replace('.',',')+' km';
+
+// ---------- Mapa ----------
+const map=L.map('map',{zoomControl:false}).setView(CONFIG.CENTER,14);
+L.control.zoom({position:'topright'}).addTo(map);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);
+if(CONFIG.TOMTOM_KEY)L.tileLayer(`https://api.tomtom.com/traffic/map/4/tile/flow/relative/{z}/{x}/{y}.png?key=${CONFIG.TOMTOM_KEY}`,{opacity:.85,maxZoom:18,attribution:'Tráfico &copy; TomTom'}).addTo(map);
+const layer=L.layerGroup().addTo(map);
+addEventListener('resize',()=>map.invalidateSize());
+
+const sb=(CONFIG.SUPABASE_URL&&CONFIG.SUPABASE_KEY&&window.supabase)?supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_KEY):null;
+const setLive=(t,c)=>{const e=$('#live');e.textContent=t;e.className='chip '+(c||'')};
+if(!sb){setLive('sin base de datos','bad');$('#setup').style.display='block'}
+
+// ---------- GPS ----------
+let pos=null,acc=null,first=true,MODE='gps',me=null;
+function here(){return pos||[map.getCenter().lat,map.getCenter().lng]}
+function onPos(p){pos=[p.coords.latitude,p.coords.longitude];acc=p.coords.accuracy;
+ if(!me)me=L.circleMarker(pos,{radius:8,color:'#fff',weight:3,fillColor:'#2563eb',fillOpacity:1}).addTo(map);else me.setLatLng(pos);
+ const g=$('#gps');g.textContent='GPS ±'+Math.round(acc)+' m';g.className='chip '+(acc<=60?'ok':acc<=200?'warn':'bad');
+ if(first){first=false;map.setView(pos,16);weather();traffic()}recompute()}
+function noPos(){const g=$('#gps');g.textContent='GPS no disponible';g.className='chip bad';if(first){first=false;setMode('center');weather();traffic()}}
+if(navigator.geolocation)navigator.geolocation.watchPosition(onPos,noPos,{enableHighAccuracy:true,maximumAge:3000,timeout:20000});else noPos();
+function setMode(m){MODE=m;$('#mg').setAttribute('aria-pressed',m==='gps');$('#mc').setAttribute('aria-pressed',m==='center');$('#cross').style.display=m==='center'?'block':'none'}
+$('#mg').onclick=()=>{if(!pos)return toast('Aún no hay GPS: usa "Centro del mapa"');setMode('gps')};
+$('#mc').onclick=()=>setMode('center');
+
+// ---------- Reportes ----------
+const reps={};
+const alive=r=>(Date.now()-r.t)/6e4<TP[r.tipo].ttl&&!(r.no>=2&&r.no>r.ok);
+const mkIcon=(r,isNew)=>L.divIcon({className:'',iconSize:[36,36],iconAnchor:[18,18],html:`<div class="pin${isNew?' new':''}" style="--c:${TP[r.tipo].c}">${TP[r.tipo].e}${r.ok>0?`<em>${r.ok}</em>`:''}</div>`});
+function popup(r){const t=TP[r.tipo],d=document.createElement('div');d.className='pp';
+ d.innerHTML=`<b>${t.e} ${t.k}</b><div class="m">${ago(r.t)} · ${r.ok} confirman · ${r.no} dicen que ya pasó</div>`;
+ if(r.disp===DEV){const s=document.createElement('div');s.className='m';s.textContent='Este reporte es tuyo.';d.appendChild(s)}
+ else if(MYV[r.id]){const s=document.createElement('div');s.className='m';s.textContent=MYV[r.id]>0?'Ya lo confirmaste.':'Ya dijiste que pasó.';d.appendChild(s)}
+ else{[['👍 Sigue ahí',1],['✔️ Ya pasó',-1]].forEach(([l,v])=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>{vote(r,v);r.m&&r.m.closePopup()};d.appendChild(b)})}
+ return d}
+function draw(r,isNew){r.m=L.marker([r.lat,r.lng],{icon:mkIcon(r,isNew)}).addTo(layer).bindPopup(()=>popup(r))}
+function refresh(r){if(alive(r)){if(r.m)r.m.setIcon(mkIcon(r));else draw(r)}else if(r.m){layer.removeLayer(r.m);r.m=null}}
+function addRep(x,isNew){if(reps[x.id])return;const r={id:x.id,tipo:x.tipo,lat:x.lat,lng:x.lng,disp:x.dispositivo,t:Date.parse(x.created_at),ok:0,no:0};reps[r.id]=r;if(alive(r))draw(r,isNew)}
+async function vote(r,v){if(!sb)return;const x=await sb.from('confirmaciones').insert({reporte_id:r.id,dispositivo:DEV,voto:v});
+ if(x.error){toast('No se pudo registrar tu voto');return}
+ MYV[r.id]=v;saveV();v>0?r.ok++:r.no++;refresh(r);recompute();toast(v>0?'Confirmaste el reporte':'Marcaste que ya pasó')}
+let lastR=0;
+async function report(tipo){if(!sb){toast('Falta conectar la base de datos');return}
+ if(Date.now()-lastR<20000){toast('Espera unos segundos antes de otro reporte');return}
+ let lat,lng;if(MODE==='gps'){if(!pos){toast('Sin GPS: usa "Centro del mapa"');return}[lat,lng]=pos}else{const c=map.getCenter();lat=c.lat;lng=c.lng}
+ const dup=Object.values(reps).find(r=>r.tipo===tipo&&alive(r)&&map.distance([lat,lng],[r.lat,r.lng])<120);
+ if(dup){if(dup.disp===DEV){toast('Ya reportaste esto aquí');return}if(MYV[dup.id]){toast('Ya confirmaste este reporte');return}lastR=Date.now();await vote(dup,1);return}
+ const x=await sb.from('reportes').insert({tipo,lat,lng,dispositivo:DEV}).select().single();
+ if(x.error||!x.data){toast('No se pudo enviar el reporte');return}
+ lastR=Date.now();addRep(x.data,true);recompute();toast('Reporte enviado: '+TP[tipo].k)}
+$('#rg').innerHTML=TP.map((t,i)=>`<button class="rbtn" data-k="${i}" style="--c:${t.c}"><span>${t.e}</span>${t.k}</button>`).join('');
+$('#rg').onclick=e=>{const b=e.target.closest('button');if(b)report(+b.dataset.k)};
+setInterval(()=>{Object.values(reps).forEach(refresh);recompute()},30000);
+
+async function load(){if(!sb)return;const since=new Date(Date.now()-4*36e5).toISOString();
+ const a=await sb.from('reportes').select('*').gte('created_at',since).order('created_at').limit(500);
+ if(a.error){setLive('error de datos','bad');return}
+ a.data.forEach(x=>addRep(x));const ids=a.data.map(x=>x.id);
+ if(ids.length){const b=await sb.from('confirmaciones').select('reporte_id,voto').in('reporte_id',ids);(b.data||[]).forEach(c=>{const r=reps[c.reporte_id];if(r)c.voto>0?r.ok++:r.no++})}
+ Object.values(reps).forEach(refresh);recompute();
+ sb.channel('mov').on('postgres_changes',{event:'INSERT',schema:'public',table:'reportes'},p=>{addRep(p.new,true);recompute()})
+  .on('postgres_changes',{event:'INSERT',schema:'public',table:'confirmaciones'},p=>{const c=p.new;if(c.dispositivo===DEV)return;const r=reps[c.reporte_id];if(!r)return;c.voto>0?r.ok++:r.no++;refresh(r);recompute()})
+  .subscribe(s=>{if(s==='SUBSCRIBED')setLive('en vivo','ok');else if(s==='CHANNEL_ERROR'||s==='TIMED_OUT'||s==='CLOSED')setLive('reconectando…','warn')})}
+load();
+
+// ---------- Clima y tráfico reales ----------
+let RAIN=false,FLOW=null;
+const WC=c=>c==0?['☀️','Despejado']:c<=3?['⛅','Parcialmente nublado']:c<=48?['🌫️','Niebla']:c<=57?['🌦️','Llovizna']:c<=67?['🌧️','Lluvia']:c<=82?['🌧️','Chubascos']:['⛈️','Tormenta'];
+async function weather(){try{const[a,b]=here();
+ const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${a}&longitude=${b}&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,relative_humidity_2m&timezone=auto`);
+ const c=(await r.json()).current,[ic,tx]=WC(c.weather_code);RAIN=c.precipitation>0||c.weather_code>=51;
+ $('#rain').style.display=RAIN?'block':'none';$('#temp').textContent=ic+' '+Math.round(c.temperature_2m)+'°C';$('#wdesc').textContent=tx;
+ $('#wdet').textContent=`Sensación ${Math.round(c.apparent_temperature)}°C · Humedad ${c.relative_humidity_2m}% · Viento ${Math.round(c.wind_speed_10m)} km/h`;recompute()}
+ catch(e){$('#wdesc').textContent='Sin conexión al clima'}}
+async function traffic(){const t=$('#trt');
+ if(!CONFIG.TOMTOM_KEY){$('#tr').textContent='Falta la clave de TomTom';$('#trd').textContent='Pégala en CONFIG.TOMTOM_KEY.';return}
+ try{const[a,b]=here();const r=await fetch(`https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json?key=${CONFIG.TOMTOM_KEY}&point=${a},${b}`);
+ const f=(await r.json()).flowSegmentData,q=f.currentSpeed/f.freeFlowSpeed;FLOW={q,cur:f.currentSpeed,free:f.freeFlowSpeed};
+ const[s,c]=q>=.8?['Fluido','#2faa5b']:q>=.5?['Moderado','#d68b0a']:['Congestionado','#d64545'];
+ $('#tr').textContent=s;t.textContent=Math.round(f.currentSpeed)+' km/h';t.style.background=c;
+ $('#trd').textContent=`Velocidad normal ${Math.round(f.freeFlowSpeed)} km/h · recorrido ${f.currentTravelTime}s vs ${f.freeFlowTravelTime}s`;recompute()}
+ catch(e){$('#tr').textContent='No se pudo leer el tráfico';$('#trd').textContent='Revisa tu clave de TomTom.'}}
+setInterval(()=>{weather();traffic()},120000);
+
+// ---------- Recomendación (reglas simples y transparentes) ----------
+function recompute(){const c=pos||[map.getCenter().lat,map.getCenter().lng],R=1500;
+ const near=Object.values(reps).filter(r=>alive(r)&&map.distance(c,[r.lat,r.lng])<=R);
+ const n=t=>near.filter(r=>r.tipo===t).length,why=[];
+ let lvl=0;
+ if(n(1)>0||n(0)>=2||(FLOW&&FLOW.q<.5))lvl=2;else if(n(0)===1||n(2)>0||(FLOW&&FLOW.q<.8)||RAIN||n(5)>0)lvl=1;
+ if(n(1))why.push(`${n(1)} accidente${n(1)>1?'s':''} reportado${n(1)>1?'s':''} a menos de 1,5 km`);
+ if(n(0))why.push(`${n(0)} reporte${n(0)>1?'s':''} de congestión cerca`);
+ if(n(2))why.push(`${n(2)} obra${n(2)>1?'s':''} o cierre${n(2)>1?'s':''} cerca`);
+ if(FLOW)why.push(`TomTom: ${Math.round(FLOW.cur)} km/h de ${Math.round(FLOW.free)} km/h normales`);
+ if(RAIN)why.push('Está lloviendo: la velocidad baja y suben los frenazos');else if(n(5))why.push('Lluvia o inundación reportada cerca');
+ const T=['Vía despejada ahora. Buen momento para salir.','Tráfico moderado. Sal con unos 10 minutos de margen.','Tráfico pesado cerca. Si puedes, sal 15 minutos antes o después, o evita esta zona.'];
+ const fr=near.filter(r=>r.tipo===4).map(r=>({r,d:map.distance(c,[r.lat,r.lng])})).sort((a,b)=>a.d-b.d)[0];
+ const fu=near.filter(r=>r.tipo===3).map(r=>({r,d:map.distance(c,[r.lat,r.lng])})).sort((a,b)=>a.d-b.d)[0];
+ if(fr)why.push(`🅿️ Parqueo libre reportado a ${fmtD(fr.d)}`);else if(fu)why.push(`🅿️ Parqueo lleno a ${fmtD(fu.d)}: busca otra zona antes de dar vueltas`);
+ if(!why.length)why.push(sb?'Sin reportes cercanos en este momento':'Conecta la base de datos para ver reportes');
+ const el=$('#rec');el.className='card rec l'+lvl;
+ el.innerHTML=`<div class="t">${T[lvl]}</div><ul>${why.map(w=>`<li>${w.replace(/[<>&]/g,'')}</li>`).join('')}</ul><div class="mu" style="margin-top:6px">Basado en TomTom, el clima real y ${near.length} reporte${near.length===1?'':'s'} de la comunidad vigente${near.length===1?'':'s'} en 1,5 km.</div>`}
+
+// ---------- Impacto y ECO-MOV ----------
+const co2=min=>min/60*CONFIG.IDLE_L_H*CONFIG.KG_CO2_L;
+const fmt=(n,d=0)=>n.toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
+async function loadImpact(){$('#eform').textContent=`Fórmula: minutos ÷ 60 × ${fmt(CONFIG.IDLE_L_H,2)} L/h × ${fmt(CONFIG.KG_CO2_L,2)} kg CO₂/L. Es una estimación basada en minutos que cada persona declara; no es una medición.`;
+ if(!sb)return;
+ const s7=new Date(Date.now()-7*864e5).toISOString(),s30=new Date(Date.now()-30*864e5).toISOString();
+ const a=await sb.from('reportes').select('tipo,created_at').gte('created_at',s7).limit(5000);
+ if(!a.error){const d=a.data;$('#k1').textContent=fmt(d.length);
+  const cnt=TP.map((t,i)=>d.filter(x=>x.tipo===i).length),mx=Math.max(1,...cnt);
+  $('#tbars').innerHTML=TP.map((t,i)=>`<div class="hb" style="--c:${t.c}"><span style="width:150px">${t.e} ${t.k}</span><div><i style="width:${cnt[i]/mx*100}%"></i></div><b>${cnt[i]}</b></div>`).join('');
+  const hrs=Array(24).fill(0);d.filter(x=>x.tipo<=1).forEach(x=>{const h=+new Date(x.created_at).toLocaleString('en-GB',{hour:'2-digit',hour12:false,timeZone:'America/Bogota'})%24;hrs[h]++});
+  const hm=Math.max(1,...hrs);$('#hbars').innerHTML=hrs.map((v,h)=>`<i title="${h} h: ${v}" style="height:${Math.max(3,v/hm*100)}%"></i>`).join('')}
+ const b=await sb.from('confirmaciones').select('id',{count:'exact',head:true}).gte('created_at',s7);if(!b.error&&b.count!=null)$('#k2').textContent=fmt(b.count);
+ $('#k3').textContent=fmt(Object.values(reps).filter(alive).length);
+ const c=await sb.from('impacto').select('minutos').gte('created_at',s30).limit(5000);
+ if(!c.error){const m=c.data.reduce((a,x)=>a+x.minutos,0);$('#e1').textContent=fmt(m);$('#e2').textContent=fmt(m/60*CONFIG.IDLE_L_H,1);$('#e3').textContent=fmt(co2(m),1)}}
+$('#egb').onclick=async()=>{if(!sb){toast('Falta conectar la base de datos');return}
+ if(Date.now()-(+LS.get('mov_eco','0'))<3e5){toast('Ya registraste tu ahorro hace poco');return}
+ const minutos=+$('#emin').value,x=await sb.from('impacto').insert({dispositivo:DEV,minutos});
+ if(x.error){toast('No se pudo registrar');return}LS.set('mov_eco',String(Date.now()));toast(`Registrado: ≈ ${fmt(co2(minutos),2)} kg de CO₂ evitados`);loadImpact()};
+
+// ---------- Pestañas ----------
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+ document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id===b.dataset.t));if(b.dataset.t==='p3')loadImpact();setTimeout(()=>map.invalidateSize(),50)});
+recompute();
+</script></body></html>
+',
+ SUPABASE_URL:'',   // ej: https://abcd1234.supabase.co
+ SUPABASE_KEY:'',   // clave "anon public"
+ CENTER:[11.2408,-74.1990],
+ // Supuestos del contador ECO-MOV (estimación, no medición):
+ IDLE_L_H:1.14,     // L/h en ralentí: 0,3 gal/h, carro de pasajeros (Argonne / DOE-AFDC)
+ KG_CO2_L:2.35      // kg CO2 por litro de gasolina: 8.887 g/galón (EPA)
+};
+// ======================================================================================
+const $=s=>document.querySelector(s);
+const LS={get(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+let DEV=LS.get('mov_dev','');if(!DEV){DEV='d'+Math.random().toString(36).slice(2,12);LS.set('mov_dev',DEV)}
+let MYV={};try{MYV=JSON.parse(LS.get('mov_votos','{}'))}catch(e){}
+const saveV=()=>LS.set('mov_votos',JSON.stringify(MYV));
+const TP=[{k:'Congestión',e:'🚗',c:'#e5a524',ttl:45},{k:'Accidente',e:'⚠️',c:'#d64545',ttl:120},{k:'Obra o cierre',e:'🚧',c:'#ea580c',ttl:240},
+ {k:'Parqueo lleno',e:'🅿️',c:'#9333ea',ttl:30},{k:'Parqueo libre',e:'🅿️',c:'#16a34a',ttl:30},{k:'Lluvia o inundación',e:'🌧️',c:'#2563eb',ttl:90}];
+let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>t.style.display='none',2800)}
+const ago=t=>{const m=Math.max(0,Math.round((Date.now()-t)/6e4));return m<1?'ahora':m<60?`hace ${m} min`:`hace ${Math.round(m/60)} h`};
+const fmtD=m=>m<1000?Math.round(m/10)*10+' m':(m/1000).toFixed(1).replace('.',',')+' km';
+
+// ---------- Mapa ----------
+const map=L.map('map',{zoomControl:false}).setView(CONFIG.CENTER,14);
+L.control.zoom({position:'topright'}).addTo(map);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);
+if(CONFIG.TOMTOM_KEY)L.tileLayer(`https://api.tomtom.com/traffic/map/4/tile/flow/relative/{z}/{x}/{y}.png?key=${CONFIG.TOMTOM_KEY}`,{opacity:.85,maxZoom:18,attribution:'Tráfico &copy; TomTom'}).addTo(map);
+const layer=L.layerGroup().addTo(map);
+addEventListener('resize',()=>map.invalidateSize());
+
+const sb=(CONFIG.SUPABASE_URL&&CONFIG.SUPABASE_KEY&&window.supabase)?supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_KEY):null;
+const setLive=(t,c)=>{const e=$('#live');e.textContent=t;e.className='chip '+(c||'')};
+if(!sb){setLive('sin base de datos','bad');$('#setup').style.display='block'}
+
+// ---------- GPS ----------
+let pos=null,acc=null,first=true,MODE='gps',me=null;
+function here(){return pos||[map.getCenter().lat,map.getCenter().lng]}
+function onPos(p){pos=[p.coords.latitude,p.coords.longitude];acc=p.coords.accuracy;
+ if(!me)me=L.circleMarker(pos,{radius:8,color:'#fff',weight:3,fillColor:'#2563eb',fillOpacity:1}).addTo(map);else me.setLatLng(pos);
+ const g=$('#gps');g.textContent='GPS ±'+Math.round(acc)+' m';g.className='chip '+(acc<=60?'ok':acc<=200?'warn':'bad');
+ if(first){first=false;map.setView(pos,16);weather();traffic()}recompute()}
+function noPos(){const g=$('#gps');g.textContent='GPS no disponible';g.className='chip bad';if(first){first=false;setMode('center');weather();traffic()}}
+if(navigator.geolocation)navigator.geolocation.watchPosition(onPos,noPos,{enableHighAccuracy:true,maximumAge:3000,timeout:20000});else noPos();
+function setMode(m){MODE=m;$('#mg').setAttribute('aria-pressed',m==='gps');$('#mc').setAttribute('aria-pressed',m==='center');$('#cross').style.display=m==='center'?'block':'none'}
+$('#mg').onclick=()=>{if(!pos)return toast('Aún no hay GPS: usa "Centro del mapa"');setMode('gps')};
+$('#mc').onclick=()=>setMode('center');
+
+// ---------- Reportes ----------
+const reps={};
+const alive=r=>(Date.now()-r.t)/6e4<TP[r.tipo].ttl&&!(r.no>=2&&r.no>r.ok);
+const mkIcon=(r,isNew)=>L.divIcon({className:'',iconSize:[36,36],iconAnchor:[18,18],html:`<div class="pin${isNew?' new':''}" style="--c:${TP[r.tipo].c}">${TP[r.tipo].e}${r.ok>0?`<em>${r.ok}</em>`:''}</div>`});
+function popup(r){const t=TP[r.tipo],d=document.createElement('div');d.className='pp';
+ d.innerHTML=`<b>${t.e} ${t.k}</b><div class="m">${ago(r.t)} · ${r.ok} confirman · ${r.no} dicen que ya pasó</div>`;
+ if(r.disp===DEV){const s=document.createElement('div');s.className='m';s.textContent='Este reporte es tuyo.';d.appendChild(s)}
+ else if(MYV[r.id]){const s=document.createElement('div');s.className='m';s.textContent=MYV[r.id]>0?'Ya lo confirmaste.':'Ya dijiste que pasó.';d.appendChild(s)}
+ else{[['👍 Sigue ahí',1],['✔️ Ya pasó',-1]].forEach(([l,v])=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>{vote(r,v);r.m&&r.m.closePopup()};d.appendChild(b)})}
+ return d}
+function draw(r,isNew){r.m=L.marker([r.lat,r.lng],{icon:mkIcon(r,isNew)}).addTo(layer).bindPopup(()=>popup(r))}
+function refresh(r){if(alive(r)){if(r.m)r.m.setIcon(mkIcon(r));else draw(r)}else if(r.m){layer.removeLayer(r.m);r.m=null}}
+function addRep(x,isNew){if(reps[x.id])return;const r={id:x.id,tipo:x.tipo,lat:x.lat,lng:x.lng,disp:x.dispositivo,t:Date.parse(x.created_at),ok:0,no:0};reps[r.id]=r;if(alive(r))draw(r,isNew)}
+async function vote(r,v){if(!sb)return;const x=await sb.from('confirmaciones').insert({reporte_id:r.id,dispositivo:DEV,voto:v});
+ if(x.error){toast('No se pudo registrar tu voto');return}
+ MYV[r.id]=v;saveV();v>0?r.ok++:r.no++;refresh(r);recompute();toast(v>0?'Confirmaste el reporte':'Marcaste que ya pasó')}
+let lastR=0;
+async function report(tipo){if(!sb){toast('Falta conectar la base de datos');return}
+ if(Date.now()-lastR<20000){toast('Espera unos segundos antes de otro reporte');return}
+ let lat,lng;if(MODE==='gps'){if(!pos){toast('Sin GPS: usa "Centro del mapa"');return}[lat,lng]=pos}else{const c=map.getCenter();lat=c.lat;lng=c.lng}
+ const dup=Object.values(reps).find(r=>r.tipo===tipo&&alive(r)&&map.distance([lat,lng],[r.lat,r.lng])<120);
+ if(dup){if(dup.disp===DEV){toast('Ya reportaste esto aquí');return}if(MYV[dup.id]){toast('Ya confirmaste este reporte');return}lastR=Date.now();await vote(dup,1);return}
+ const x=await sb.from('reportes').insert({tipo,lat,lng,dispositivo:DEV}).select().single();
+ if(x.error||!x.data){toast('No se pudo enviar el reporte');return}
+ lastR=Date.now();addRep(x.data,true);recompute();toast('Reporte enviado: '+TP[tipo].k)}
+$('#rg').innerHTML=TP.map((t,i)=>`<button class="rbtn" data-k="${i}" style="--c:${t.c}"><span>${t.e}</span>${t.k}</button>`).join('');
+$('#rg').onclick=e=>{const b=e.target.closest('button');if(b)report(+b.dataset.k)};
+setInterval(()=>{Object.values(reps).forEach(refresh);recompute()},30000);
+
+async function load(){if(!sb)return;const since=new Date(Date.now()-4*36e5).toISOString();
+ const a=await sb.from('reportes').select('*').gte('created_at',since).order('created_at').limit(500);
+ if(a.error){setLive('error de datos','bad');return}
+ a.data.forEach(x=>addRep(x));const ids=a.data.map(x=>x.id);
+ if(ids.length){const b=await sb.from('confirmaciones').select('reporte_id,voto').in('reporte_id',ids);(b.data||[]).forEach(c=>{const r=reps[c.reporte_id];if(r)c.voto>0?r.ok++:r.no++})}
+ Object.values(reps).forEach(refresh);recompute();
+ sb.channel('mov').on('postgres_changes',{event:'INSERT',schema:'public',table:'reportes'},p=>{addRep(p.new,true);recompute()})
+  .on('postgres_changes',{event:'INSERT',schema:'public',table:'confirmaciones'},p=>{const c=p.new;if(c.dispositivo===DEV)return;const r=reps[c.reporte_id];if(!r)return;c.voto>0?r.ok++:r.no++;refresh(r);recompute()})
+  .subscribe(s=>{if(s==='SUBSCRIBED')setLive('en vivo','ok');else if(s==='CHANNEL_ERROR'||s==='TIMED_OUT'||s==='CLOSED')setLive('reconectando…','warn')})}
+load();
+
+// ---------- Clima y tráfico reales ----------
+let RAIN=false,FLOW=null;
+const WC=c=>c==0?['☀️','Despejado']:c<=3?['⛅','Parcialmente nublado']:c<=48?['🌫️','Niebla']:c<=57?['🌦️','Llovizna']:c<=67?['🌧️','Lluvia']:c<=82?['🌧️','Chubascos']:['⛈️','Tormenta'];
+async function weather(){try{const[a,b]=here();
+ const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${a}&longitude=${b}&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,relative_humidity_2m&timezone=auto`);
+ const c=(await r.json()).current,[ic,tx]=WC(c.weather_code);RAIN=c.precipitation>0||c.weather_code>=51;
+ $('#rain').style.display=RAIN?'block':'none';$('#temp').textContent=ic+' '+Math.round(c.temperature_2m)+'°C';$('#wdesc').textContent=tx;
+ $('#wdet').textContent=`Sensación ${Math.round(c.apparent_temperature)}°C · Humedad ${c.relative_humidity_2m}% · Viento ${Math.round(c.wind_speed_10m)} km/h`;recompute()}
+ catch(e){$('#wdesc').textContent='Sin conexión al clima'}}
+async function traffic(){const t=$('#trt');
+ if(!CONFIG.TOMTOM_KEY){$('#tr').textContent='Falta la clave de TomTom';$('#trd').textContent='Pégala en CONFIG.TOMTOM_KEY.';return}
+ try{const[a,b]=here();const r=await fetch(`https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json?key=${CONFIG.TOMTOM_KEY}&point=${a},${b}`);
+ const f=(await r.json()).flowSegmentData,q=f.currentSpeed/f.freeFlowSpeed;FLOW={q,cur:f.currentSpeed,free:f.freeFlowSpeed};
+ const[s,c]=q>=.8?['Fluido','#2faa5b']:q>=.5?['Moderado','#d68b0a']:['Congestionado','#d64545'];
+ $('#tr').textContent=s;t.textContent=Math.round(f.currentSpeed)+' km/h';t.style.background=c;
+ $('#trd').textContent=`Velocidad normal ${Math.round(f.freeFlowSpeed)} km/h · recorrido ${f.currentTravelTime}s vs ${f.freeFlowTravelTime}s`;recompute()}
+ catch(e){$('#tr').textContent='No se pudo leer el tráfico';$('#trd').textContent='Revisa tu clave de TomTom.'}}
+setInterval(()=>{weather();traffic()},120000);
+
+// ---------- Recomendación (reglas simples y transparentes) ----------
+function recompute(){const c=pos||[map.getCenter().lat,map.getCenter().lng],R=1500;
+ const near=Object.values(reps).filter(r=>alive(r)&&map.distance(c,[r.lat,r.lng])<=R);
+ const n=t=>near.filter(r=>r.tipo===t).length,why=[];
+ let lvl=0;
+ if(n(1)>0||n(0)>=2||(FLOW&&FLOW.q<.5))lvl=2;else if(n(0)===1||n(2)>0||(FLOW&&FLOW.q<.8)||RAIN||n(5)>0)lvl=1;
+ if(n(1))why.push(`${n(1)} accidente${n(1)>1?'s':''} reportado${n(1)>1?'s':''} a menos de 1,5 km`);
+ if(n(0))why.push(`${n(0)} reporte${n(0)>1?'s':''} de congestión cerca`);
+ if(n(2))why.push(`${n(2)} obra${n(2)>1?'s':''} o cierre${n(2)>1?'s':''} cerca`);
+ if(FLOW)why.push(`TomTom: ${Math.round(FLOW.cur)} km/h de ${Math.round(FLOW.free)} km/h normales`);
+ if(RAIN)why.push('Está lloviendo: la velocidad baja y suben los frenazos');else if(n(5))why.push('Lluvia o inundación reportada cerca');
+ const T=['Vía despejada ahora. Buen momento para salir.','Tráfico moderado. Sal con unos 10 minutos de margen.','Tráfico pesado cerca. Si puedes, sal 15 minutos antes o después, o evita esta zona.'];
+ const fr=near.filter(r=>r.tipo===4).map(r=>({r,d:map.distance(c,[r.lat,r.lng])})).sort((a,b)=>a.d-b.d)[0];
+ const fu=near.filter(r=>r.tipo===3).map(r=>({r,d:map.distance(c,[r.lat,r.lng])})).sort((a,b)=>a.d-b.d)[0];
+ if(fr)why.push(`🅿️ Parqueo libre reportado a ${fmtD(fr.d)}`);else if(fu)why.push(`🅿️ Parqueo lleno a ${fmtD(fu.d)}: busca otra zona antes de dar vueltas`);
+ if(!why.length)why.push(sb?'Sin reportes cercanos en este momento':'Conecta la base de datos para ver reportes');
+ const el=$('#rec');el.className='card rec l'+lvl;
+ el.innerHTML=`<div class="t">${T[lvl]}</div><ul>${why.map(w=>`<li>${w.replace(/[<>&]/g,'')}</li>`).join('')}</ul><div class="mu" style="margin-top:6px">Basado en TomTom, el clima real y ${near.length} reporte${near.length===1?'':'s'} de la comunidad vigente${near.length===1?'':'s'} en 1,5 km.</div>`}
+
+// ---------- Impacto y ECO-MOV ----------
+const co2=min=>min/60*CONFIG.IDLE_L_H*CONFIG.KG_CO2_L;
+const fmt=(n,d=0)=>n.toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
+async function loadImpact(){$('#eform').textContent=`Fórmula: minutos ÷ 60 × ${fmt(CONFIG.IDLE_L_H,2)} L/h × ${fmt(CONFIG.KG_CO2_L,2)} kg CO₂/L. Es una estimación basada en minutos que cada persona declara; no es una medición.`;
+ if(!sb)return;
+ const s7=new Date(Date.now()-7*864e5).toISOString(),s30=new Date(Date.now()-30*864e5).toISOString();
+ const a=await sb.from('reportes').select('tipo,created_at').gte('created_at',s7).limit(5000);
+ if(!a.error){const d=a.data;$('#k1').textContent=fmt(d.length);
+  const cnt=TP.map((t,i)=>d.filter(x=>x.tipo===i).length),mx=Math.max(1,...cnt);
+  $('#tbars').innerHTML=TP.map((t,i)=>`<div class="hb" style="--c:${t.c}"><span style="width:150px">${t.e} ${t.k}</span><div><i style="width:${cnt[i]/mx*100}%"></i></div><b>${cnt[i]}</b></div>`).join('');
+  const hrs=Array(24).fill(0);d.filter(x=>x.tipo<=1).forEach(x=>{const h=+new Date(x.created_at).toLocaleString('en-GB',{hour:'2-digit',hour12:false,timeZone:'America/Bogota'})%24;hrs[h]++});
+  const hm=Math.max(1,...hrs);$('#hbars').innerHTML=hrs.map((v,h)=>`<i title="${h} h: ${v}" style="height:${Math.max(3,v/hm*100)}%"></i>`).join('')}
+ const b=await sb.from('confirmaciones').select('id',{count:'exact',head:true}).gte('created_at',s7);if(!b.error&&b.count!=null)$('#k2').textContent=fmt(b.count);
+ $('#k3').textContent=fmt(Object.values(reps).filter(alive).length);
+ const c=await sb.from('impacto').select('minutos').gte('created_at',s30).limit(5000);
+ if(!c.error){const m=c.data.reduce((a,x)=>a+x.minutos,0);$('#e1').textContent=fmt(m);$('#e2').textContent=fmt(m/60*CONFIG.IDLE_L_H,1);$('#e3').textContent=fmt(co2(m),1)}}
+$('#egb').onclick=async()=>{if(!sb){toast('Falta conectar la base de datos');return}
+ if(Date.now()-(+LS.get('mov_eco','0'))<3e5){toast('Ya registraste tu ahorro hace poco');return}
+ const minutos=+$('#emin').value,x=await sb.from('impacto').insert({dispositivo:DEV,minutos});
+ if(x.error){toast('No se pudo registrar');return}LS.set('mov_eco',String(Date.now()));toast(`Registrado: ≈ ${fmt(co2(minutos),2)} kg de CO₂ evitados`);loadImpact()};
+
+// ---------- Pestañas ----------
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+ document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id===b.dataset.t));if(b.dataset.t==='p3')loadImpact();setTimeout(()=>map.invalidateSize(),50)});
+recompute();
 </script></body></html>
