@@ -11,9 +11,10 @@
 body{display:flex;flex-direction:column;background:var(--bg);color:var(--tx);font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif;padding-top:env(safe-area-inset-top,0)}
 header{background:#2e2b6b;color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px}
 header b{font-size:18px;letter-spacing:.2px}header small{display:block;font-size:11px;opacity:.85;font-weight:400}
-.chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.chip{font-size:11px;font-weight:700;padding:4px 9px;border-radius:99px;background:rgba(255,255,255,.18);white-space:nowrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+.chip{font-size:11px;font-weight:700;padding:4px 9px;border-radius:99px;background:rgba(255,255,255,.18);white-space:nowrap;color:#fff}
 .chip.ok{background:#2faa5b}.chip.warn{background:#d68b0a}.chip.bad{background:#d64545}
+button.chip{border:0;font-family:inherit;cursor:pointer}
 .app{flex:1;min-height:0;display:flex;flex-direction:column}
 #mapw{flex:1;min-height:180px;position:relative}#map{position:absolute;inset:0}
 #rain{position:absolute;inset:0;z-index:500;pointer-events:none;display:none;background:linear-gradient(105deg,transparent 48%,rgba(150,185,235,.5) 49%,transparent 50%) 0 0/22px 38px;animation:fall .5s linear infinite;opacity:.5}
@@ -34,57 +35,99 @@ h3{margin:0 0 6px;font-size:14px;color:var(--ind)}
 .rec{border-left:6px solid var(--c);}.rec .t{font-size:17px;font-weight:700;color:var(--c)}
 .l0{--c:var(--gr)}.l1{--c:var(--am)}.l2{--c:var(--rd)}
 .rec ul{margin:8px 0 0;padding-left:18px;font-size:13px}.rec li{margin:3px 0}
-button.act{font:inherit;cursor:pointer}
-.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.rbtn{background:var(--card);color:var(--tx);border:2px solid var(--ln);border-left:6px solid var(--c);border-radius:12px;padding:10px 8px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;min-height:64px;display:flex;align-items:center;gap:8px;text-align:left}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.rbtn{background:var(--card);color:var(--tx);border:2px solid var(--ln);border-left:6px solid var(--c);border-radius:12px;padding:10px 8px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;min-height:60px;display:flex;align-items:center;gap:8px;text-align:left}
 .rbtn span{font-size:24px}.rbtn:active{background:var(--lgr)}
+.sub{font-size:12px;font-weight:700;color:var(--ind);margin:4px 0 6px}
 .seg{display:flex;gap:6px;margin-bottom:10px}.seg button{flex:1;font:inherit;font-size:12px;font-weight:700;padding:9px 4px;border-radius:10px;border:2px solid var(--ln);background:var(--card);color:var(--tx);cursor:pointer}
 .seg button[aria-pressed=true]{background:var(--ind2);border-color:var(--ind2);color:#fff}
-select{font:inherit;padding:10px;border-radius:10px;border:1px solid var(--ln);background:var(--bg);color:var(--tx)}
+select,input[type=text],input[type=email],input[type=password]{font:inherit;padding:11px;border-radius:10px;border:1px solid var(--ln);background:var(--bg);color:var(--tx);width:100%}
+select{width:auto}
 .go{width:100%;margin-top:8px;background:var(--gr);color:#fff;border:0;border-radius:12px;padding:12px;font:inherit;font-weight:700;font-size:15px;cursor:pointer}
-.go:disabled{opacity:.5}
+.go.sec{background:var(--ind2)}.go:disabled{opacity:.5}
 .kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.kpi{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:10px 6px;text-align:center}.kpi b{display:block;font-size:20px}.kpi span{font-size:11px;color:var(--mu)}
 .bars{display:flex;align-items:flex-end;gap:2px;height:80px;margin-top:8px}.bars i{flex:1;background:var(--ind2);border-radius:3px 3px 0 0;min-height:2px}
 .axis{display:flex;justify-content:space-between;font-size:10px;color:var(--mu);margin-top:2px}
 .hb{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px}.hb div{flex:1;height:10px;background:var(--ln);border-radius:6px;overflow:hidden}.hb i{display:block;height:100%;background:var(--c)}
 .pin{width:36px;height:36px;border-radius:50%;background:#fff;border:3px solid var(--c);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 6px rgba(0,0,0,.35);position:relative}
+.pin.st{border-radius:9px;border-style:dashed}
 .pin.new{animation:pop .5s ease-out}@keyframes pop{from{transform:scale(0)}60%{transform:scale(1.35)}to{transform:scale(1)}}
 .pin em{position:absolute;right:-6px;top:-6px;background:var(--c);color:#fff;font:700 10px Arial;border-radius:9px;padding:1px 5px;font-style:normal}
-.pp b{font-size:14px}.pp .m{font-size:12px;color:#555;margin:2px 0 8px}.pp button{font:inherit;font-size:13px;font-weight:700;border-radius:8px;border:1px solid #ccc;background:#f4f4fa;padding:7px 9px;margin:0 4px 4px 0;cursor:pointer}
+.rip{width:10px;height:10px;border:3px solid #2e2b6b;border-radius:50%;animation:rip 1.2s ease-out 2;opacity:0}
+@keyframes rip{from{transform:scale(1);opacity:.9}to{transform:scale(9);opacity:0}}
+.pp b{font-size:14px}.pp .m{font-size:12px;color:#555;margin:2px 0 6px}.pp button{font:inherit;font-size:13px;font-weight:700;border-radius:8px;border:1px solid #ccc;background:#f4f4fa;padding:7px 9px;margin:0 4px 4px 0;cursor:pointer}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2e2b6b;color:#fff;padding:11px 16px;border-radius:12px;font-size:14px;z-index:9999;display:none;max-width:90vw;text-align:center}
 a{color:var(--ind2)}
-@media(min-width:900px){.app{flex-direction:row-reverse}#sheet{width:420px;max-height:none;border-top:0;border-right:1px solid var(--ln)}}
+.warnc{border-color:var(--am);background:var(--lam)}.warnc h3{color:var(--am)}
+.err{color:var(--rd);font-size:13px;margin-top:8px;min-height:16px}
+#auth{position:fixed;inset:0;z-index:10000;background:var(--bg);display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto}
+.authc{width:100%;max-width:400px}.authc h2{margin:6px 0 2px;font-size:28px;color:var(--ind)}
+.authc input{margin-bottom:8px}.authc label{display:flex;gap:8px;font-size:12px;color:var(--mu);align-items:flex-start;margin:4px 0}
+.authc label input{width:auto;margin:2px 0 0}
+#tv{display:none}
+body.tv #sheet{display:none}
+body.tv #tv{display:block}
+#tvk{position:absolute;left:12px;top:12px;z-index:700;display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:8px}
+#tvk div{background:rgba(46,43,107,.92);color:#fff;border-radius:14px;padding:10px 14px}
+#tvk b{display:block;font-size:34px;line-height:1.1}#tvk span{font-size:12px;opacity:.85}
+#tvt{position:absolute;left:12px;bottom:12px;z-index:700;display:flex;flex-direction:column-reverse;gap:6px;max-width:60%}
+#tvt div{background:rgba(255,255,255,.95);color:#1d1b3a;border-radius:10px;padding:8px 12px;font-weight:700;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.3);animation:pop .4s ease-out}
+#tvu{position:absolute;right:12px;bottom:12px;z-index:700;background:#2e2b6b;color:#fff;border-radius:12px;padding:10px 14px;font-size:16px}
+#tvx{position:absolute;right:12px;top:12px;z-index:700;background:#fff;border:0;border-radius:10px;padding:8px 12px;font:inherit;font-weight:700;cursor:pointer}
+@media(min-width:900px){.app{flex-direction:row-reverse}#sheet{width:420px;max-height:none;border-top:0;border-right:1px solid var(--ln)}body.tv #tvk b{font-size:44px}}
 :focus-visible{outline:3px solid var(--ind2);outline-offset:2px}
 </style></head><body>
+<div id="auth"><form class="authc" id="af" novalidate>
+ <h2>MOVI-INFO</h2><div class="mu" style="margin-bottom:14px">Reportes de la comunidad para mover mejor la ciudad</div>
+ <div class="seg"><button type="button" id="aS" aria-pressed="true">Ingresar</button><button type="button" id="aR" aria-pressed="false">Crear cuenta</button></div>
+ <input id="an" type="text" placeholder="Tu nombre" autocomplete="name" style="display:none">
+ <input id="ae" type="email" placeholder="Correo electrónico" autocomplete="email">
+ <input id="ap" type="password" placeholder="Contraseña (mínimo 6 caracteres)" autocomplete="current-password">
+ <div class="mu" id="ah">Si usas tu correo institucional, tu cuenta se marca como <b>estudiante</b>.</div>
+ <label id="acw" style="display:none"><input type="checkbox" id="ac"><span>Acepto que MOVI-INFO use mi ubicación mientras la app esté abierta y guarde mis reportes y votos (Ley 1581 de 2012). No se comparte tu nombre ni tu correo con otros usuarios.</span></label>
+ <button class="go" id="ab" type="submit">Entrar</button>
+ <div class="err" id="aerr" role="alert"></div>
+</form></div>
 <header><div><b>MOVI-INFO</b><small>Reportes de la comunidad para mover mejor la ciudad</small></div>
- <div class="chips"><span class="chip" id="live">conectando…</span><span class="chip" id="gps">GPS…</span></div></header>
+ <div class="chips"><span class="chip" id="ppl">👥 –</span><span class="chip" id="live">conectando…</span><span class="chip" id="gps">GPS…</span><button class="chip" id="tvb" type="button" title="Modo pantalla para proyectar">🖥️ Pantalla</button></div></header>
 <div class="app">
- <div id="mapw"><div id="map"></div><div id="rain"></div><div id="cross"><i></i></div></div>
+ <div id="mapw"><div id="map"></div><div id="rain"></div><div id="cross"><i></i></div>
+  <div id="tv"><div id="tvk"><div><b id="tv1">0</b><span>reportes activos</span></div><div><b id="tv2">0</b><span>personas conectadas</span></div><div><b id="tv3">–</b><span>calidad del aire (AQI)</span></div><div><b id="tv4">0</b><span>kg CO₂ evitados (est.)</span></div></div><div id="tvt"></div><div id="tvu">Entra y reporta: <b>rodri370.github.io/movi-info</b></div><button id="tvx" type="button">Salir de pantalla</button></div></div>
  <section id="sheet">
   <div class="tabs" role="tablist"><button role="tab" data-t="p1" aria-selected="true">Ahora</button><button role="tab" data-t="p2" aria-selected="false">Reportar</button><button role="tab" data-t="p3" aria-selected="false">Impacto</button></div>
   <div class="pane on" id="p1">
-   <div id="setup" class="card" style="display:none;border-color:var(--rd)"><h3>Falta conectar la base de datos</h3><div class="mu">Pega tus claves de Supabase en CONFIG (SUPABASE_URL y SUPABASE_KEY) para que los reportes sean compartidos.</div></div>
+   <div id="setup" class="card" style="display:none;border-color:var(--rd)"><h3>Falta conectar la base de datos</h3><div class="mu">Revisa SUPABASE_URL y SUPABASE_KEY en CONFIG.</div></div>
+   <div id="gmsg" class="card warnc" style="display:none"><h3>📍 Falta tu ubicación</h3><div class="mu" id="gtxt" style="color:var(--tx)"></div>
+    <div class="row" style="margin-top:8px;justify-content:flex-start"><button class="chip" style="background:var(--ind2)" id="gretry" type="button">Reintentar GPS</button><button class="chip" style="background:var(--ind2)" id="gcopy" type="button">Copiar enlace</button></div></div>
    <div class="card rec l0" id="rec"><div class="t">Calculando…</div></div>
    <div class="card"><div class="row"><div><div class="mu">Clima ahora</div><div class="big" id="temp">–</div></div><div style="text-align:right"><div id="wdesc" style="font-weight:700">Cargando…</div><div class="mu" id="wdet"></div></div></div>
     <div class="mu" style="margin-top:6px"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a></div></div>
-   <div class="card"><div class="row"><div><div class="mu">Tráfico donde estás (TomTom)</div><div id="tr" style="font-weight:700">–</div></div><span class="chip" id="trt" style="background:#888;color:#fff">sin datos</span></div><div class="mu" id="trd"></div></div>
-   <div class="mu" style="text-align:center">Los reportes caducan solos y la comunidad los confirma o los descarta. Sin registro: no guardamos tu identidad ni seguimos tu ubicación.</div>
+   <div class="card"><div class="row"><div><div class="mu">Tráfico donde estás (TomTom)</div><div id="tr" style="font-weight:700">–</div></div><span class="chip" id="trt" style="background:#888">sin datos</span></div><div class="mu" id="trd"></div></div>
+   <div class="card"><div class="row"><div><div class="mu">Calidad del aire donde estás</div><div id="aq" style="font-weight:700">–</div></div><span class="chip" id="aqt" style="background:#888">sin datos</span></div><div class="mu" id="aqd">Estimación de modelo (CAMS vía Open-Meteo), no un sensor en tu esquina.</div></div>
+   <div class="mu" style="text-align:center">Los reportes caducan solos y la comunidad (y los celulares en movimiento) los confirman o los cierran.</div>
   </div>
   <div class="pane" id="p2">
    <div class="mu" style="margin-bottom:6px">Ubicación del reporte</div>
-   <div class="seg"><button id="mg" aria-pressed="true">📍 Mi GPS</button><button id="mc" aria-pressed="false">🎯 Centro del mapa</button></div>
+   <div class="seg"><button id="mg" type="button" aria-pressed="true">📍 Mi GPS</button><button id="mc" type="button" aria-pressed="false">🎯 Centro del mapa</button></div>
+   <div class="sub">Lo que está pasando ahora</div>
    <div class="rgrid" id="rg"></div>
-   <div class="mu" style="margin-top:10px">Si ya hay un reporte igual a menos de 120 m, tu toque lo <b>confirma</b> en vez de duplicarlo. Toca un ícono del mapa para confirmar o descartar reportes.</div>
+   <button class="go sec" id="clr" type="button" style="margin:-4px 0 14px">🟢 Todo despejado aquí (cierra un reporte cercano)</button>
+   <div class="sub">Lo que está dañado en la vía (dura hasta que lo arreglen)</div>
+   <div class="rgrid" id="rs"></div>
+   <div class="mu">Si ya hay un reporte igual cerca, tu toque lo <b>confirma</b> en vez de duplicarlo. Toca un ícono del mapa para confirmarlo, cerrarlo o retirar el tuyo.</div>
   </div>
   <div class="pane" id="p3">
+   <div class="card"><h3>Tu aporte</h3><div id="me" style="font-weight:700">–</div><div class="mu" id="me2"></div><button class="go sec" id="out" type="button">Cerrar sesión</button></div>
    <div class="card"><h3>Comunidad (últimos 7 días)</h3><div class="kpis"><div class="kpi"><b id="k1">–</b><span>reportes</span></div><div class="kpi"><b id="k2">–</b><span>confirmaciones</span></div><div class="kpi"><b id="k3">–</b><span>activos ahora</span></div></div>
     <div id="tbars" style="margin-top:10px"></div></div>
+   <div class="card"><h3>Cuánto duran los reportes (cerrados por la comunidad)</h3><div id="dur" class="mu">–</div></div>
+   <div class="card"><h3>Daños abiertos en la vía</h3><div id="dam" class="mu">–</div></div>
    <div class="card"><h3>Horas con más congestión y accidentes</h3><div class="bars" id="hbars"></div><div class="axis"><span>0 h</span><span>6 h</span><span>12 h</span><span>18 h</span><span>23 h</span></div></div>
    <div class="card"><h3>ECO-MOV · CO₂ evitado (estimado)</h3>
     <div class="kpis"><div class="kpi"><b id="e1">–</b><span>min evitados</span></div><div class="kpi"><b id="e2">–</b><span>L combustible</span></div><div class="kpi"><b id="e3">–</b><span>kg CO₂</span></div></div>
     <div class="mu" style="margin:8px 0 6px">Hoy, gracias a la app, evité estar parado en el tráfico unos:</div>
     <div class="row"><select id="emin"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>30</option></select><span>minutos</span></div>
-    <button class="go" id="egb">Registrar mi ahorro</button>
+    <button class="go" id="egb" type="button">Registrar mi ahorro</button>
     <div class="mu" style="margin-top:8px" id="eform"></div></div>
   </div>
  </section>
@@ -99,21 +142,57 @@ const CONFIG={
  SUPABASE_URL:'https://fzmjnuvfpnoqlnohffqe.supabase.co',
  SUPABASE_KEY:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6bWpudXZmcG5vcWxub2hmZnFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3MTAwMzgsImV4cCI6MjEwODI4NjAzOH0.bjFv6KmknceaFaalbD4qVzWucAocL4NR1gJGVtVkVpE',
  CENTER:[11.2408,-74.1990],
- // Supuestos del contador ECO-MOV (estimación, no medición):
+ DOMINIOS_EDU:['usa.edu.co'],  // correos que se marcan como "estudiante"
  IDLE_L_H:1.14,     // L/h en ralentí: 0,3 gal/h, carro de pasajeros (Argonne / DOE-AFDC)
  KG_CO2_L:2.35      // kg CO2 por litro de gasolina: 8.887 g/galón (EPA)
 };
 // ======================================================================================
 const $=s=>document.querySelector(s);
 const LS={get(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
-let DEV=LS.get('mov_dev','');if(!DEV){DEV='d'+Math.random().toString(36).slice(2,12);LS.set('mov_dev',DEV)}
-let MYV={};try{MYV=JSON.parse(LS.get('mov_votos','{}'))}catch(e){}
-const saveV=()=>LS.set('mov_votos',JSON.stringify(MYV));
+let USER=null,DEV='',MYV={};
+const saveV=()=>LS.set('mov_votos_'+DEV,JSON.stringify(MYV));
 const TP=[{k:'Congestión',e:'🚗',c:'#e5a524',ttl:45},{k:'Accidente',e:'⚠️',c:'#d64545',ttl:120},{k:'Obra o cierre',e:'🚧',c:'#ea580c',ttl:240},
- {k:'Parqueo lleno',e:'🅿️',c:'#9333ea',ttl:30},{k:'Parqueo libre',e:'🅿️',c:'#16a34a',ttl:30},{k:'Lluvia o inundación',e:'🌧️',c:'#2563eb',ttl:90}];
+ {k:'Parqueo lleno',e:'🅿️',c:'#9333ea',ttl:30},{k:'Parqueo libre',e:'🅿️',c:'#16a34a',ttl:30},{k:'Lluvia o inundación',e:'🌧️',c:'#2563eb',ttl:90},
+ {k:'Semáforo dañado',e:'🚦',c:'#0e7490',ttl:43200},{k:'Hueco en la vía',e:'🕳️',c:'#78350f',ttl:43200},{k:'Señal dañada o faltante',e:'🛑',c:'#be123c',ttl:43200},{k:'Alcantarilla tapada',e:'🌊',c:'#1d4ed8',ttl:43200}];
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>t.style.display='none',2800)}
-const ago=t=>{const m=Math.max(0,Math.round((Date.now()-t)/6e4));return m<1?'ahora':m<60?`hace ${m} min`:`hace ${Math.round(m/60)} h`};
+const ago=t=>{const m=Math.max(0,Math.round((Date.now()-t)/6e4));return m<1?'ahora':m<60?`hace ${m} min`:m<2880?`hace ${Math.round(m/60)} h`:`hace ${Math.round(m/1440)} días`};
 const fmtD=m=>m<1000?Math.round(m/10)*10+' m':(m/1000).toFixed(1).replace('.',',')+' km';
+const fmt=(n,d=0)=>n.toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtMin=m=>m<60?Math.round(m)+' min':m<2880?fmt(m/60,1)+' h':fmt(m/1440,1)+' días';
+const esEdu=m=>{m=(m||'').toLowerCase();return CONFIG.DOMINIOS_EDU.some(d=>m.endsWith('@'+d)||m.endsWith('.'+d))};
+
+// ---------- Pantalla de registro ----------
+let amode='in';
+function setA(m){amode=m;$('#aS').setAttribute('aria-pressed',m==='in');$('#aR').setAttribute('aria-pressed',m==='up');
+ $('#an').style.display=m==='up'?'block':'none';$('#acw').style.display=m==='up'?'flex':'none';$('#ab').textContent=m==='up'?'Crear mi cuenta':'Entrar';
+ $('#ap').autocomplete=m==='up'?'new-password':'current-password';$('#aerr').textContent=''}
+$('#aS').onclick=()=>setA('in');$('#aR').onclick=()=>setA('up');
+const aerr=t=>{$('#aerr').textContent=t;$('#ab').disabled=false};
+const trad=m=>{m=(m||'').toLowerCase();
+ if(m.includes('invalid login'))return'Correo o contraseña incorrectos.';
+ if(m.includes('already registered')||m.includes('already been registered'))return'Ese correo ya tiene cuenta: usa "Ingresar".';
+ if(m.includes('at least'))return'La contraseña debe tener mínimo 6 caracteres.';
+ if(m.includes('valid email')||m.includes('invalid email')||m.includes('is invalid'))return'Escribe un correo válido.';
+ if(m.includes('rate limit')||m.includes('too many'))return'Demasiados intentos. Espera un minuto.';
+ if(m.includes('not confirmed'))return'Debes confirmar tu correo antes de ingresar.';
+ return'No se pudo completar: '+m};
+$('#af').onsubmit=async e=>{e.preventDefault();if(!sb)return aerr('Falta conectar la base de datos.');
+ const m=$('#ae').value.trim(),p=$('#ap').value;
+ if(!/^\S+@\S+\.\S+$/.test(m))return aerr('Escribe un correo válido.');
+ if(p.length<6)return aerr('La contraseña debe tener mínimo 6 caracteres.');
+ if(amode==='up'&&!$('#ac').checked)return aerr('Debes aceptar el uso de tu ubicación para crear la cuenta.');
+ $('#ab').disabled=true;$('#aerr').textContent='';
+ try{
+  if(amode==='up'){const nombre=($('#an').value.trim()||m.split('@')[0]).slice(0,40);
+   const r=await sb.auth.signUp({email:m,password:p,options:{data:{nombre,tipo:esEdu(m)?'estudiante':'normal'}}});
+   if(r.error)return aerr(trad(r.error.message));
+   if(!r.data.session)return aerr('Cuenta creada. Revisa tu correo para confirmarla y luego ingresa.');
+   enter(r.data.session.user)}
+  else{const r=await sb.auth.signInWithPassword({email:m,password:p});
+   if(r.error)return aerr(trad(r.error.message));
+   enter(r.data.session.user)}
+ }catch(x){aerr('Sin conexión. Intenta de nuevo.')}
+ $('#ab').disabled=false};
 
 // ---------- Mapa ----------
 const map=L.map('map',{zoomControl:false}).setView(CONFIG.CENTER,14);
@@ -125,63 +204,118 @@ addEventListener('resize',()=>map.invalidateSize());
 
 const sb=(CONFIG.SUPABASE_URL&&CONFIG.SUPABASE_KEY&&window.supabase)?supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_KEY):null;
 const setLive=(t,c)=>{const e=$('#live');e.textContent=t;e.className='chip '+(c||'')};
-if(!sb){setLive('sin base de datos','bad');$('#setup').style.display='block'}
+if(!sb){setLive('sin base de datos','bad');$('#setup').style.display='block';$('#auth').style.display='none'}
 
-// ---------- GPS ----------
-let pos=null,acc=null,first=true,MODE='gps',me=null;
+// ---------- Ubicación (GPS) ----------
+let pos=null,acc=null,first=true,MODE='gps',me=null,gpsWatch=null,lastP=null,lastFast=0;
+const INAPP=/FBAN|FBAV|Instagram|Line\/|MicroMessenger|Snapchat|TikTok|WhatsApp|; wv\)/i.test(navigator.userAgent||'');
 function here(){return pos||[map.getCenter().lat,map.getCenter().lng]}
-function onPos(p){pos=[p.coords.latitude,p.coords.longitude];acc=p.coords.accuracy;
+function gpsHelp(code){const c=$('#gmsg');
+ const why=code===-1?'Para ver tu ubicación:':code===1?'Tu navegador bloqueó la ubicación.':code===2?'No hay señal de GPS en este momento.':code===3?'El GPS está tardando demasiado.':'Este navegador no puede dar tu ubicación.';
+ const how=INAPP?'Parece que abriste el enlace dentro de otra app (WhatsApp, Instagram…), que bloquea el GPS. Toca ⋮ o ⋯ y elige «Abrir en el navegador» (Chrome o Safari).'
+  :'Toca el candado 🔒 junto a la dirección → Permisos → Ubicación → Permitir. Verifica también que el GPS del celular esté encendido. Luego toca Reintentar.';
+ $('#gtxt').textContent=why+' '+how+' Mientras tanto puedes reportar con «Centro del mapa».';c.style.display='block'}
+function onPos(p){pos=[p.coords.latitude,p.coords.longitude];acc=p.coords.accuracy;$('#gmsg').style.display='none';
  if(!me)me=L.circleMarker(pos,{radius:8,color:'#fff',weight:3,fillColor:'#2563eb',fillOpacity:1}).addTo(map);else me.setLatLng(pos);
  const g=$('#gps');g.textContent='GPS ±'+Math.round(acc)+' m';g.className='chip '+(acc<=60?'ok':acc<=200?'warn':'bad');
- if(first){first=false;map.setView(pos,16);weather();traffic()}recompute()}
-function noPos(){const g=$('#gps');g.textContent='GPS no disponible';g.className='chip bad';if(first){first=false;setMode('center');weather();traffic()}}
-if(navigator.geolocation)navigator.geolocation.watchPosition(onPos,noPos,{enableHighAccuracy:true,maximumAge:3000,timeout:20000});else noPos();
+ const v=speedKmh(p);lastP={t:p.timestamp||Date.now(),ll:pos};
+ if(first){first=false;map.setView(pos,16);weather();traffic();air()}
+ if(acc<=50&&v!=null)autoCheck(v);recompute()}
+function gpsFail(e){const code=e&&e.code?e.code:0;if(pos&&code!==1)return;
+ const g=$('#gps');g.textContent='GPS no disponible';g.className='chip bad';gpsHelp(code);
+ if(first){first=false;setMode('center');weather();traffic();air()}}
+function startGPS(){if(!navigator.geolocation){gpsFail({code:0});return}
+ if(INAPP)gpsHelp(-1);
+ if(gpsWatch!=null)navigator.geolocation.clearWatch(gpsWatch);
+ gpsWatch=navigator.geolocation.watchPosition(onPos,gpsFail,{enableHighAccuracy:true,maximumAge:3000,timeout:20000})}
+$('#gretry').onclick=()=>{first=true;startGPS();toast('Buscando tu ubicación…')};
+$('#gcopy').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);toast('Enlace copiado: pégalo en Chrome o Safari')}catch(e){toast('Copia la dirección desde la barra del navegador')}};
 function setMode(m){MODE=m;$('#mg').setAttribute('aria-pressed',m==='gps');$('#mc').setAttribute('aria-pressed',m==='center');$('#cross').style.display=m==='center'?'block':'none'}
 $('#mg').onclick=()=>{if(!pos)return toast('Aún no hay GPS: usa "Centro del mapa"');setMode('gps')};
 $('#mc').onclick=()=>setMode('center');
 
 // ---------- Reportes ----------
 const reps={};
+const isSt=r=>r.tipo>=6;
 const alive=r=>(Date.now()-r.t)/6e4<TP[r.tipo].ttl&&!(r.no>=2&&r.no>r.ok);
-const mkIcon=(r,isNew)=>L.divIcon({className:'',iconSize:[36,36],iconAnchor:[18,18],html:`<div class="pin${isNew?' new':''}" style="--c:${TP[r.tipo].c}">${TP[r.tipo].e}${r.ok>0?`<em>${r.ok}</em>`:''}</div>`});
-function popup(r){const t=TP[r.tipo],d=document.createElement('div');d.className='pp';
- d.innerHTML=`<b>${t.e} ${t.k}</b><div class="m">${ago(r.t)} · ${r.ok} confirman · ${r.no} dicen que ya pasó</div>`;
- if(r.disp===DEV){const s=document.createElement('div');s.className='m';s.textContent='Este reporte es tuyo.';d.appendChild(s)}
- else if(MYV[r.id]){const s=document.createElement('div');s.className='m';s.textContent=MYV[r.id]>0?'Ya lo confirmaste.':'Ya dijiste que pasó.';d.appendChild(s)}
- else{[['👍 Sigue ahí',1],['✔️ Ya pasó',-1]].forEach(([l,v])=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>{vote(r,v);r.m&&r.m.closePopup()};d.appendChild(b)})}
+const estado=r=>r.no>0?(isSt(r)?'Reparación reportada':'Despejándose'):r.ok>0?'Confirmado':'Nuevo';
+const mkIcon=(r,isNew)=>L.divIcon({className:'',iconSize:[36,36],iconAnchor:[18,18],html:`<div class="pin${isSt(r)?' st':''}${isNew?' new':''}" style="--c:${TP[r.tipo].c}">${TP[r.tipo].e}${r.ok>0?`<em>${r.ok}</em>`:''}</div>`});
+function popup(r){const t=TP[r.tipo],st=isSt(r),d=document.createElement('div');d.className='pp';
+ d.innerHTML=`<b>${t.e} ${t.k}</b><div class="m">${estado(r)} · ${st?'abierto':'reportado'} ${ago(r.t)}</div><div class="m">${r.ok} confirman · ${r.no} ${st?'dicen que ya lo arreglaron':'dicen que ya está despejado'}${r.au?` · 🛰️ ${r.au} por movimiento`:''}</div>`;
+ const note=s=>{const x=document.createElement('div');x.className='m';x.textContent=s;d.appendChild(x)};
+ const btn=(l,f)=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>{f();r.m&&r.m.closePopup()};d.appendChild(b)};
+ if(r.disp===DEV){note('Este reporte es tuyo.');btn('🗑️ Retirar mi reporte',()=>retire(r))}
+ else if(MYV[r.id])note(MYV[r.id]>0?'Ya lo confirmaste.':(st?'Ya dijiste que lo arreglaron.':'Ya dijiste que está despejado.'));
+ else{btn(st?'👍 Sigue dañado':'👍 Sigue ahí',()=>vote(r,1));btn(st?'🔧 Ya lo arreglaron':'🟢 Ya está despejado',()=>vote(r,-1))}
  return d}
 function draw(r,isNew){r.m=L.marker([r.lat,r.lng],{icon:mkIcon(r,isNew)}).addTo(layer).bindPopup(()=>popup(r))}
 function refresh(r){if(alive(r)){if(r.m)r.m.setIcon(mkIcon(r));else draw(r)}else if(r.m){layer.removeLayer(r.m);r.m=null}}
-function addRep(x,isNew){if(reps[x.id])return;const r={id:x.id,tipo:x.tipo,lat:x.lat,lng:x.lng,disp:x.dispositivo,t:Date.parse(x.created_at),ok:0,no:0};reps[r.id]=r;if(alive(r))draw(r,isNew)}
-async function vote(r,v){if(!sb)return;const x=await sb.from('confirmaciones').insert({reporte_id:r.id,dispositivo:DEV,voto:v});
- if(x.error){toast('No se pudo registrar tu voto');return}
- MYV[r.id]=v;saveV();v>0?r.ok++:r.no++;refresh(r);recompute();toast(v>0?'Confirmaste el reporte':'Marcaste que ya pasó')}
+function addRep(x,isNew){if(reps[x.id])return false;const r={id:x.id,tipo:x.tipo,lat:x.lat,lng:x.lng,disp:x.dispositivo,t:Date.parse(x.created_at),ok:0,no:0,au:0};reps[r.id]=r;if(alive(r))draw(r,isNew);return true}
+function drop(id){const r=reps[id];if(!r)return;if(r.m)layer.removeLayer(r.m);delete reps[id];recompute()}
+function tick(msg){const t=$('#tvt');if(!t)return;const d=document.createElement('div');d.textContent=msg;t.prepend(d);while(t.children.length>5)t.lastChild.remove();setTimeout(()=>d.remove(),25000)}
+function ripple(ll){try{const m=L.marker(ll,{icon:L.divIcon({className:'',iconSize:[10,10],iconAnchor:[5,5],html:'<div class="rip"></div>'}),interactive:false}).addTo(map);setTimeout(()=>map.removeLayer(m),3000)}catch(e){}}
+function tvFollow(ll){if(document.body.classList.contains('tv')&&!map.getBounds().contains(ll))map.flyTo(ll,15)}
+async function vote(r,v,auto){if(!sb||MYV[r.id])return;MYV[r.id]=v;
+ const x=await sb.from('confirmaciones').insert({reporte_id:r.id,dispositivo:DEV,voto:v,auto:!!auto});
+ if(x.error){if(x.error.code==='23505'){saveV();return}delete MYV[r.id];if(!auto)toast('No se pudo registrar tu voto');return}
+ saveV();v>0?r.ok++:r.no++;if(auto)r.au++;refresh(r);recompute();
+ tick(auto?(v>0?'🛰️ Un celular en movimiento confirmó un reporte':'🛰️ Un celular en movimiento vio la vía fluida'):(v>0?'👍 Reporte confirmado':'🟢 Reporte cerrado por la comunidad'));
+ if(!auto)toast(v>0?'Confirmaste el reporte':(isSt(r)?'Marcaste que ya lo arreglaron':'Marcaste que está despejado'))}
+async function retire(r){if(!sb)return;const x=await sb.from('reportes').delete().eq('id',r.id).eq('dispositivo',DEV).select();
+ if(x.error||!x.data||!x.data.length){toast('No se pudo retirar el reporte');return}drop(r.id);toast('Reporte retirado')}
 let lastR=0;
 async function report(tipo){if(!sb){toast('Falta conectar la base de datos');return}
  if(Date.now()-lastR<20000){toast('Espera unos segundos antes de otro reporte');return}
  let lat,lng;if(MODE==='gps'){if(!pos){toast('Sin GPS: usa "Centro del mapa"');return}[lat,lng]=pos}else{const c=map.getCenter();lat=c.lat;lng=c.lng}
- const dup=Object.values(reps).find(r=>r.tipo===tipo&&alive(r)&&map.distance([lat,lng],[r.lat,r.lng])<120);
+ const rad=tipo>=6?40:120;
+ const dup=Object.values(reps).find(r=>r.tipo===tipo&&alive(r)&&map.distance([lat,lng],[r.lat,r.lng])<rad);
  if(dup){if(dup.disp===DEV){toast('Ya reportaste esto aquí');return}if(MYV[dup.id]){toast('Ya confirmaste este reporte');return}lastR=Date.now();await vote(dup,1);return}
  const x=await sb.from('reportes').insert({tipo,lat,lng,dispositivo:DEV}).select().single();
  if(x.error||!x.data){toast('No se pudo enviar el reporte');return}
- lastR=Date.now();addRep(x.data,true);recompute();toast('Reporte enviado: '+TP[tipo].k)}
-$('#rg').innerHTML=TP.map((t,i)=>`<button class="rbtn" data-k="${i}" style="--c:${t.c}"><span>${t.e}</span>${t.k}</button>`).join('');
-$('#rg').onclick=e=>{const b=e.target.closest('button');if(b)report(+b.dataset.k)};
+ lastR=Date.now();addRep(x.data,true);recompute();tick(TP[tipo].e+' '+TP[tipo].k+' reportado');ripple([lat,lng]);toast('Reporte enviado: '+TP[tipo].k)}
+$('#rg').innerHTML=TP.slice(0,6).map((t,i)=>`<button class="rbtn" type="button" data-k="${i}" style="--c:${t.c}"><span>${t.e}</span>${t.k}</button>`).join('');
+$('#rs').innerHTML=TP.slice(6).map((t,i)=>`<button class="rbtn" type="button" data-k="${i+6}" style="--c:${t.c}"><span>${t.e}</span>${t.k}</button>`).join('');
+$('#rg').onclick=$('#rs').onclick=e=>{const b=e.target.closest('button');if(b)report(+b.dataset.k)};
+$('#clr').onclick=()=>{const c=here();
+ const n=Object.values(reps).filter(r=>r.tipo<=5&&alive(r)&&r.disp!==DEV&&!MYV[r.id]&&map.distance(c,[r.lat,r.lng])<=200).sort((a,b)=>map.distance(c,[a.lat,a.lng])-map.distance(c,[b.lat,b.lng]))[0];
+ if(!n){toast('No hay reportes de otros a menos de 200 m para cerrar');return}vote(n,-1)};
 setInterval(()=>{Object.values(reps).forEach(refresh);recompute()},30000);
 
-async function load(){if(!sb)return;const since=new Date(Date.now()-4*36e5).toISOString();
- const a=await sb.from('reportes').select('*').gte('created_at',since).order('created_at').limit(500);
+// ---------- Autoverificación por movimiento ----------
+function speedKmh(p){const s=p.coords.speed;if(s!=null&&!isNaN(s))return s*3.6;
+ if(lastP){const dt=((p.timestamp||Date.now())-lastP.t)/1000;if(dt>=2&&dt<=30)return map.distance(lastP.ll,[p.coords.latitude,p.coords.longitude])/dt*3.6}return null}
+function autoCheck(v){if(!sb||!USER||v<0)return;if(v>=20)lastFast=Date.now();
+ const near=Object.values(reps).filter(r=>r.tipo===0&&alive(r)&&r.disp!==DEV&&!MYV[r.id]&&map.distance(pos,[r.lat,r.lng])<=80);
+ near.forEach(r=>{
+  if(v>=25)vote(r,-1,true);                                   // pasa rápido por el lugar: la vía fluye
+  else if(v<=8&&Date.now()-lastFast<120000)vote(r,1,true)})}  // venía rápido y ahora va lento ahí: congestión real
+
+// ---------- Carga de datos y tiempo real ----------
+async function load(){if(!sb)return;const now=Date.now(),since=new Date(now-4*36e5).toISOString(),since30=new Date(now-30*864e5).toISOString();
+ const a=await sb.from('reportes').select('*').or(`created_at.gte.${since},and(tipo.gte.6,created_at.gte.${since30})`).order('created_at').limit(800);
  if(a.error){setLive('error de datos','bad');return}
  a.data.forEach(x=>addRep(x));const ids=a.data.map(x=>x.id);
- if(ids.length){const b=await sb.from('confirmaciones').select('reporte_id,voto').in('reporte_id',ids);(b.data||[]).forEach(c=>{const r=reps[c.reporte_id];if(r)c.voto>0?r.ok++:r.no++})}
+ if(ids.length){const b=await sb.from('confirmaciones').select('reporte_id,voto,auto').in('reporte_id',ids);(b.data||[]).forEach(c=>{const r=reps[c.reporte_id];if(r){c.voto>0?r.ok++:r.no++;if(c.auto)r.au++}})}
  Object.values(reps).forEach(refresh);recompute();
- sb.channel('mov').on('postgres_changes',{event:'INSERT',schema:'public',table:'reportes'},p=>{addRep(p.new,true);recompute()})
-  .on('postgres_changes',{event:'INSERT',schema:'public',table:'confirmaciones'},p=>{const c=p.new;if(c.dispositivo===DEV)return;const r=reps[c.reporte_id];if(!r)return;c.voto>0?r.ok++:r.no++;refresh(r);recompute()})
+ sb.channel('mov')
+  .on('postgres_changes',{event:'INSERT',schema:'public',table:'reportes'},p=>{const x=p.new;if(addRep(x,true)){recompute();if(x.dispositivo!==DEV){tick(TP[x.tipo].e+' '+TP[x.tipo].k+' reportado');ripple([x.lat,x.lng]);tvFollow([x.lat,x.lng])}}})
+  .on('postgres_changes',{event:'DELETE',schema:'public',table:'reportes'},p=>{if(p.old&&p.old.id)drop(p.old.id)})
+  .on('postgres_changes',{event:'INSERT',schema:'public',table:'confirmaciones'},p=>{const c=p.new;if(c.dispositivo===DEV)return;const r=reps[c.reporte_id];if(!r)return;c.voto>0?r.ok++:r.no++;if(c.auto)r.au++;refresh(r);recompute();
+   tick(c.auto?'🛰️ Un celular en movimiento verificó un reporte':c.voto>0?'👍 Reporte confirmado':'🟢 Reporte cerrado por la comunidad')})
   .subscribe(s=>{if(s==='SUBSCRIBED')setLive('en vivo','ok');else if(s==='CHANNEL_ERROR'||s==='TIMED_OUT'||s==='CLOSED')setLive('reconectando…','warn')})}
-load();
+let PPL=0;
+function startPresence(){if(!sb)return;const ch=sb.channel('online',{config:{presence:{key:DEV}}});
+ ch.on('presence',{event:'sync'},()=>{PPL=Object.keys(ch.presenceState()).length;$('#ppl').textContent='👥 '+PPL;tvUpd()}).subscribe(s=>{if(s==='SUBSCRIBED')ch.track({t:Date.now()})})}
 
-// ---------- Clima y tráfico reales ----------
-let RAIN=false,FLOW=null;
+// ---------- Entrar a la app ----------
+function enter(u){if(USER)return;USER=u;DEV=u.id;MYV={};try{MYV=JSON.parse(LS.get('mov_votos_'+DEV,'{}'))}catch(e){}
+ $('#auth').style.display='none';startGPS();load();startPresence();weather();traffic();air();recompute()}
+if(sb){sb.auth.getSession().then(r=>{if(r&&r.data&&r.data.session)enter(r.data.session.user)}).catch(()=>{});
+ sb.auth.onAuthStateChange((ev,s)=>{if(s&&s.user&&!USER)enter(s.user)})}
+$('#out').onclick=async()=>{try{await sb.auth.signOut()}catch(e){}location.reload()};
+
+// ---------- Clima, tráfico y aire reales ----------
+let RAIN=false,FLOW=null,AQ=null;
 const WC=c=>c==0?['☀️','Despejado']:c<=3?['⛅','Parcialmente nublado']:c<=48?['🌫️','Niebla']:c<=57?['🌦️','Llovizna']:c<=67?['🌧️','Lluvia']:c<=82?['🌧️','Chubascos']:['⛈️','Tormenta'];
 async function weather(){try{const[a,b]=here();
  const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${a}&longitude=${b}&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,relative_humidity_2m&timezone=auto`);
@@ -197,47 +331,81 @@ async function traffic(){const t=$('#trt');
  $('#tr').textContent=s;t.textContent=Math.round(f.currentSpeed)+' km/h';t.style.background=c;
  $('#trd').textContent=`Velocidad normal ${Math.round(f.freeFlowSpeed)} km/h · recorrido ${f.currentTravelTime}s vs ${f.freeFlowTravelTime}s`;recompute()}
  catch(e){$('#tr').textContent='No se pudo leer el tráfico';$('#trd').textContent='Revisa tu clave de TomTom.'}}
-setInterval(()=>{weather();traffic()},120000);
+const aqCat=v=>v<=50?['Buena','#2faa5b']:v<=100?['Moderada','#d68b0a']:v<=150?['Dañina para personas sensibles','#ea580c']:['Dañina','#d64545'];
+async function air(){try{const[a,b]=here();
+ const r=await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${a}&longitude=${b}&current=us_aqi,pm2_5&timezone=auto`);
+ const c=(await r.json()).current;if(!c||c.us_aqi==null)throw 0;AQ={v:Math.round(c.us_aqi),pm:c.pm2_5};const[tx,col]=aqCat(AQ.v);
+ $('#aq').textContent=tx;$('#aqt').textContent='AQI '+AQ.v;$('#aqt').style.background=col;
+ $('#aqd').textContent=`PM2.5: ${fmt(AQ.pm||0,1)} µg/m³ · Estimación de modelo (CAMS vía Open-Meteo), no un sensor en tu esquina.`;$('#tv3').textContent=AQ.v;recompute()}
+ catch(e){$('#aq').textContent='No disponible ahora'}}
+setInterval(()=>{weather();traffic();air()},120000);
 
 // ---------- Recomendación (reglas simples y transparentes) ----------
 function recompute(){const c=pos||[map.getCenter().lat,map.getCenter().lng],R=1500;
  const near=Object.values(reps).filter(r=>alive(r)&&map.distance(c,[r.lat,r.lng])<=R);
  const n=t=>near.filter(r=>r.tipo===t).length,why=[];
+ $('#tv1').textContent=Object.values(reps).filter(alive).length;
  let lvl=0;
  if(n(1)>0||n(0)>=2||(FLOW&&FLOW.q<.5))lvl=2;else if(n(0)===1||n(2)>0||(FLOW&&FLOW.q<.8)||RAIN||n(5)>0)lvl=1;
  if(n(1))why.push(`${n(1)} accidente${n(1)>1?'s':''} reportado${n(1)>1?'s':''} a menos de 1,5 km`);
  if(n(0))why.push(`${n(0)} reporte${n(0)>1?'s':''} de congestión cerca`);
  if(n(2))why.push(`${n(2)} obra${n(2)>1?'s':''} o cierre${n(2)>1?'s':''} cerca`);
+ const dm=near.filter(r=>r.tipo>=6).length;if(dm)why.push(`🛠️ ${dm} daño${dm>1?'s':''} en la vía reportado${dm>1?'s':''} cerca (semáforos, huecos, señales)`);
  if(FLOW)why.push(`TomTom: ${Math.round(FLOW.cur)} km/h de ${Math.round(FLOW.free)} km/h normales`);
  if(RAIN)why.push('Está lloviendo: la velocidad baja y suben los frenazos');else if(n(5))why.push('Lluvia o inundación reportada cerca');
+ if(AQ&&AQ.v>100&&lvl>=1)why.push(`💨 Aire de baja calidad (AQI ${AQ.v}): si puedes, evita esperar con el motor encendido o hacer ejercicio en esta zona`);
  const T=['Vía despejada ahora. Buen momento para salir.','Tráfico moderado. Sal con unos 10 minutos de margen.','Tráfico pesado cerca. Si puedes, sal 15 minutos antes o después, o evita esta zona.'];
  const fr=near.filter(r=>r.tipo===4).map(r=>({r,d:map.distance(c,[r.lat,r.lng])})).sort((a,b)=>a.d-b.d)[0];
  const fu=near.filter(r=>r.tipo===3).map(r=>({r,d:map.distance(c,[r.lat,r.lng])})).sort((a,b)=>a.d-b.d)[0];
  if(fr)why.push(`🅿️ Parqueo libre reportado a ${fmtD(fr.d)}`);else if(fu)why.push(`🅿️ Parqueo lleno a ${fmtD(fu.d)}: busca otra zona antes de dar vueltas`);
  if(!why.length)why.push(sb?'Sin reportes cercanos en este momento':'Conecta la base de datos para ver reportes');
  const el=$('#rec');el.className='card rec l'+lvl;
- el.innerHTML=`<div class="t">${T[lvl]}</div><ul>${why.map(w=>`<li>${w.replace(/[<>&]/g,'')}</li>`).join('')}</ul><div class="mu" style="margin-top:6px">Basado en TomTom, el clima real y ${near.length} reporte${near.length===1?'':'s'} de la comunidad vigente${near.length===1?'':'s'} en 1,5 km.</div>`}
+ el.innerHTML=`<div class="t">${T[lvl]}</div><ul>${why.map(w=>`<li>${w.replace(/[<>&]/g,'')}</li>`).join('')}</ul><div class="mu" style="margin-top:6px">Basado en TomTom, el clima, el aire y ${near.length} reporte${near.length===1?'':'s'} vigente${near.length===1?'':'s'} de la comunidad en 1,5 km.</div>`}
 
-// ---------- Impacto y ECO-MOV ----------
+// ---------- Impacto, duración real y ECO-MOV ----------
 const co2=min=>min/60*CONFIG.IDLE_L_H*CONFIG.KG_CO2_L;
-const fmt=(n,d=0)=>n.toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
+async function ecoTotal(){if(!sb)return;const s30=new Date(Date.now()-30*864e5).toISOString();
+ const c=await sb.from('impacto').select('minutos').gte('created_at',s30).limit(5000);
+ if(c.error)return;const m=c.data.reduce((a,x)=>a+x.minutos,0);
+ $('#e1').textContent=fmt(m);$('#e2').textContent=fmt(m/60*CONFIG.IDLE_L_H,1);$('#e3').textContent=fmt(co2(m),1);$('#tv4').textContent=fmt(co2(m),1)}
+function duraciones(reportes,confs){const by={};confs.forEach(c=>(by[c.reporte_id]=by[c.reporte_id]||[]).push(c));
+ const out={};reportes.forEach(r=>{const vs=(by[r.id]||[]).sort((a,b)=>a.created_at<b.created_at?-1:1);let ok=0,no=0,cierre=null;
+  for(const v of vs){v.voto>0?ok++:no++;if(no>=2&&no>ok){cierre=v.created_at;break}}
+  if(cierre){const d=(Date.parse(cierre)-Date.parse(r.created_at))/6e4;(out[r.tipo]=out[r.tipo]||[]).push(d)}});return out}
 async function loadImpact(){$('#eform').textContent=`Fórmula: minutos ÷ 60 × ${fmt(CONFIG.IDLE_L_H,2)} L/h × ${fmt(CONFIG.KG_CO2_L,2)} kg CO₂/L. Es una estimación basada en minutos que cada persona declara; no es una medición.`;
- if(!sb)return;
- const s7=new Date(Date.now()-7*864e5).toISOString(),s30=new Date(Date.now()-30*864e5).toISOString();
- const a=await sb.from('reportes').select('tipo,created_at').gte('created_at',s7).limit(5000);
+ if(!sb||!USER)return;
+ const md=USER.user_metadata||{};
+ const [r1,r2]=await Promise.all([sb.from('reportes').select('id',{count:'exact',head:true}).eq('dispositivo',DEV),sb.from('confirmaciones').select('id',{count:'exact',head:true}).eq('dispositivo',DEV)]);
+ const pr=(r1.count||0),pc=(r2.count||0),pts=pr*5+pc,niv=pts>=50?'🛡️ Guardián de la vía':pts>=15?'👁️ Vigía del tráfico':'🌱 Nuevo aporte';
+ $('#me').textContent=`${md.nombre||'Usuario'} · ${md.tipo==='estudiante'?'🎓 Estudiante (correo institucional)':'Ciudadano'}`;
+ $('#me2').textContent=`${niv} · ${pts} puntos (${pr} reportes, ${pc} confirmaciones). Cada reporte suma 5 y cada confirmación o cierre suma 1.`;
+ const s7=new Date(Date.now()-7*864e5).toISOString();
+ const a=await sb.from('reportes').select('id,tipo,created_at').gte('created_at',s7).limit(1000);
  if(!a.error){const d=a.data;$('#k1').textContent=fmt(d.length);
   const cnt=TP.map((t,i)=>d.filter(x=>x.tipo===i).length),mx=Math.max(1,...cnt);
-  $('#tbars').innerHTML=TP.map((t,i)=>`<div class="hb" style="--c:${t.c}"><span style="width:150px">${t.e} ${t.k}</span><div><i style="width:${cnt[i]/mx*100}%"></i></div><b>${cnt[i]}</b></div>`).join('');
+  $('#tbars').innerHTML=TP.map((t,i)=>`<div class="hb" style="--c:${t.c}"><span style="width:170px">${t.e} ${t.k}</span><div><i style="width:${cnt[i]/mx*100}%"></i></div><b>${cnt[i]}</b></div>`).join('');
   const hrs=Array(24).fill(0);d.filter(x=>x.tipo<=1).forEach(x=>{const h=+new Date(x.created_at).toLocaleString('en-GB',{hour:'2-digit',hour12:false,timeZone:'America/Bogota'})%24;hrs[h]++});
-  const hm=Math.max(1,...hrs);$('#hbars').innerHTML=hrs.map((v,h)=>`<i title="${h} h: ${v}" style="height:${Math.max(3,v/hm*100)}%"></i>`).join('')}
- const b=await sb.from('confirmaciones').select('id',{count:'exact',head:true}).gte('created_at',s7);if(!b.error&&b.count!=null)$('#k2').textContent=fmt(b.count);
+  const hm=Math.max(1,...hrs);$('#hbars').innerHTML=hrs.map((v,h)=>`<i title="${h} h: ${v}" style="height:${Math.max(3,v/hm*100)}%"></i>`).join('');
+  const cf=await sb.from('confirmaciones').select('reporte_id,voto,created_at').gte('created_at',s7).limit(1000);
+  if(!cf.error){$('#k2').textContent=fmt(cf.data.length);const du=duraciones(d,cf.data),keys=Object.keys(du);
+   $('#dur').innerHTML=keys.length?keys.map(k=>{const a=du[k],avg=a.reduce((x,y)=>x+y,0)/a.length;return`${TP[k].e} ${TP[k].k}: <b>${fmtMin(avg)}</b> en promedio (${a.length} cerrado${a.length>1?'s':''})`}).join('<br>'):'Aún no hay reportes cerrados por la comunidad. Esta tabla se llena sola con el uso: es el dato propio de la ciudad.'}}
  $('#k3').textContent=fmt(Object.values(reps).filter(alive).length);
- const c=await sb.from('impacto').select('minutos').gte('created_at',s30).limit(5000);
- if(!c.error){const m=c.data.reduce((a,x)=>a+x.minutos,0);$('#e1').textContent=fmt(m);$('#e2').textContent=fmt(m/60*CONFIG.IDLE_L_H,1);$('#e3').textContent=fmt(co2(m),1)}}
-$('#egb').onclick=async()=>{if(!sb){toast('Falta conectar la base de datos');return}
- if(Date.now()-(+LS.get('mov_eco','0'))<3e5){toast('Ya registraste tu ahorro hace poco');return}
+ const dm=Object.values(reps).filter(r=>isSt(r)&&alive(r)).sort((a,b)=>b.ok-a.ok||a.t-b.t).slice(0,5);
+ $('#dam').innerHTML=dm.length?dm.map(r=>`${TP[r.tipo].e} ${TP[r.tipo].k} · <b>${r.ok+1}</b> persona${r.ok?'s':''} · abierto ${ago(r.t).replace('hace ','')}`).join('<br>'):'No hay daños abiertos reportados.';
+ ecoTotal()}
+$('#egb').onclick=async()=>{if(!sb||!USER){toast('Inicia sesión primero');return}
+ if(Date.now()-(+LS.get('mov_eco_'+DEV,'0'))<3e5){toast('Ya registraste tu ahorro hace poco');return}
  const minutos=+$('#emin').value,x=await sb.from('impacto').insert({dispositivo:DEV,minutos});
- if(x.error){toast('No se pudo registrar');return}LS.set('mov_eco',String(Date.now()));toast(`Registrado: ≈ ${fmt(co2(minutos),2)} kg de CO₂ evitados`);loadImpact()};
+ if(x.error){toast('No se pudo registrar');return}LS.set('mov_eco_'+DEV,String(Date.now()));toast(`Registrado: ≈ ${fmt(co2(minutos),2)} kg de CO₂ evitados`);loadImpact()};
+
+// ---------- Modo pantalla ----------
+function tvUpd(){$('#tv2').textContent=PPL}
+function tvToggle(on){document.body.classList.toggle('tv',on);
+ if(on){try{document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}catch(e){}ecoTotal();recompute()}
+ else{try{document.fullscreenElement&&document.exitFullscreen()}catch(e){}}
+ setTimeout(()=>map.invalidateSize(),150)}
+$('#tvb').onclick=()=>tvToggle(true);$('#tvx').onclick=()=>tvToggle(false);
+setInterval(()=>{if(document.body.classList.contains('tv'))ecoTotal()},30000);
 
 // ---------- Pestañas ----------
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
