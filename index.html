@@ -6,7 +6,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
 :root{--ind:#2e2b6b;--ind2:#3b3a8c;--gr:#1e6b3a;--lgr:#ddf3e4;--bg:#f3f2fb;--card:#fff;--tx:#1d1b3a;--mu:#5f5c86;--ln:#dcdaf0;--am:#a86a0a;--lam:#fff1d6;--rd:#b53030;--lrd:#fbe3e3}
-@media(prefers-color-scheme:dark){:root{--bg:#14132b;--card:#1e1d3d;--tx:#ecebff;--mu:#aeacd4;--ln:#34326a;--ind:#c9c7f5;--ind2:#9d9bf0;--gr:#6fd596;--lgr:#173a27;--am:#f0b64d;--lam:#3d2f12;--rd:#f19a9a;--lrd:#411d1d}}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#14132b;--card:#1e1d3d;--tx:#ecebff;--mu:#aeacd4;--ln:#34326a;--ind:#c9c7f5;--ind2:#9d9bf0;--gr:#6fd596;--lgr:#173a27;--am:#f0b64d;--lam:#3d2f12;--rd:#f19a9a;--lrd:#411d1d}}
+:root[data-theme=dark]{--bg:#14132b;--card:#1e1d3d;--tx:#ecebff;--mu:#aeacd4;--ln:#34326a;--ind:#c9c7f5;--ind2:#9d9bf0;--gr:#6fd596;--lgr:#173a27;--am:#f0b64d;--lam:#3d2f12;--rd:#f19a9a;--lrd:#411d1d}
 *{box-sizing:border-box}html,body{height:100%;margin:0}
 body{display:flex;flex-direction:column;background:var(--bg);color:var(--tx);font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif;padding-top:env(safe-area-inset-top,0)}
 header{background:#2e2b6b;color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px}
@@ -58,6 +59,25 @@ select{width:auto}
 .pp b{font-size:14px}.pp .m{font-size:12px;color:#555;margin:2px 0 6px}.pp button{font:inherit;font-size:13px;font-weight:700;border-radius:8px;border:1px solid #ccc;background:#f4f4fa;padding:7px 9px;margin:0 4px 4px 0;cursor:pointer}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2e2b6b;color:#fff;padding:11px 16px;border-radius:12px;font-size:14px;z-index:9999;display:none;max-width:90vw;text-align:center}
 a{color:var(--ind2)}
+details.card>summary{cursor:pointer;font-weight:700;color:var(--ind);list-style:none;display:flex;justify-content:space-between;align-items:center}
+details.card>summary::-webkit-details-marker{display:none}
+details.card>summary::after{content:"▾";transition:transform .2s}
+details.card[open]>summary::after{transform:rotate(180deg)}
+details.card>.body{margin-top:10px}
+.faq details{border-top:1px solid var(--ln)}.faq summary{cursor:pointer;font-weight:700;font-size:13px;padding:9px 0}
+.faq p{margin:0 0 9px;font-size:13px;line-height:1.45}
+.set{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--ln);font-size:13px}
+.set:first-child{border-top:0}.set small{display:block;color:var(--mu);font-size:11px;margin-top:2px;line-height:1.35}
+.sw{position:relative;width:46px;height:26px;flex:none}.sw input{opacity:0;width:100%;height:100%;margin:0;position:absolute;cursor:pointer;z-index:1}
+.sw i{position:absolute;inset:0;background:var(--ln);border-radius:99px;transition:.2s}.sw i::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+.sw input:checked+i{background:var(--gr)}.sw input:checked+i::after{transform:translateX(20px)}
+textarea{font:inherit;padding:11px;border-radius:10px;border:1px solid var(--ln);background:var(--bg);color:var(--tx);width:100%;min-height:90px;resize:vertical}
+.tk{border-top:1px solid var(--ln);padding:8px 0;font-size:13px;color:var(--tx)}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--ln);color:var(--tx)}
+.plc{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--ln);font-size:13px;color:var(--tx)}.plc:first-child{border-top:0}
+.x{border:0;background:none;color:var(--mu);font-size:18px;cursor:pointer}
+#onb{position:fixed;inset:0;z-index:10001;background:rgba(20,19,43,.85);display:none;align-items:center;justify-content:center;padding:16px}
+#onb .box{background:var(--card);color:var(--tx);border-radius:18px;padding:22px;max-width:380px;width:100%}#onb .em{font-size:48px}
 .warnc{border-color:var(--am);background:var(--lam)}.warnc h3{color:var(--am)}
 .err{color:var(--rd);font-size:13px;margin-top:8px;min-height:16px}
 #auth{position:fixed;inset:0;z-index:10000;background:var(--bg);display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto}
@@ -94,7 +114,7 @@ body.tv #tv{display:block}
  <div id="mapw"><div id="map"></div><div id="rain"></div><div id="cross"><i></i></div>
   <div id="tv"><div id="tvk"><div><b id="tv1">0</b><span>reportes activos</span></div><div><b id="tv2">0</b><span>personas conectadas</span></div><div><b id="tv3">–</b><span>calidad del aire (AQI)</span></div><div><b id="tv4">0</b><span>kg CO₂ evitados (est.)</span></div></div><div id="tvt"></div><div id="tvu">Entra y reporta: <b>rodri370.github.io/movi-info</b></div><button id="tvx" type="button">Salir de pantalla</button></div></div>
  <section id="sheet">
-  <div class="tabs" role="tablist"><button role="tab" data-t="p1" aria-selected="true">Ahora</button><button role="tab" data-t="p2" aria-selected="false">Reportar</button><button role="tab" data-t="p3" aria-selected="false">Impacto</button></div>
+  <div class="tabs" role="tablist"><button role="tab" data-t="p1" aria-selected="true">Ahora</button><button role="tab" data-t="p2" aria-selected="false">Reportar</button><button role="tab" data-t="p3" aria-selected="false">Impacto</button><button role="tab" data-t="p4" aria-selected="false">Más</button></div>
   <div class="pane on" id="p1">
    <div id="setup" class="card" style="display:none;border-color:var(--rd)"><h3>Falta conectar la base de datos</h3><div class="mu">Revisa SUPABASE_URL y SUPABASE_KEY en CONFIG.</div></div>
    <div id="gmsg" class="card warnc" style="display:none"><h3>📍 Falta tu ubicación</h3><div class="mu" id="gtxt" style="color:var(--tx)"></div>
@@ -104,6 +124,9 @@ body.tv #tv{display:block}
     <div class="mu" style="margin-top:6px"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a></div></div>
    <div class="card"><div class="row"><div><div class="mu">Tráfico donde estás (TomTom)</div><div id="tr" style="font-weight:700">–</div></div><span class="chip" id="trt" style="background:#888">sin datos</span></div><div class="mu" id="trd"></div></div>
    <div class="card"><div class="row"><div><div class="mu">Calidad del aire donde estás</div><div id="aq" style="font-weight:700">–</div></div><span class="chip" id="aqt" style="background:#888">sin datos</span></div><div class="mu" id="aqd">Estimación de modelo (CAMS vía Open-Meteo), no un sensor en tu esquina.</div></div>
+   <div class="card"><h3>📌 Mis lugares</h3><div id="plist" class="mu">Guarda tu casa, la universidad o el trabajo para ver cómo está el tráfico ahí.</div>
+    <div class="row" style="margin-top:8px"><input id="pname" type="text" maxlength="20" placeholder="Nombre (ej: Universidad)" style="flex:1"><button class="chip" id="padd" type="button" style="background:var(--ind2)">Guardar aquí</button></div>
+    <div class="mu" style="margin-top:6px">Se guarda solo en este dispositivo. Máximo 3. Usa tu ubicación, o el centro del mapa si no hay GPS.</div></div>
    <div class="mu" style="text-align:center">Los reportes caducan solos y la comunidad (y los celulares en movimiento) los confirman o los cierran.</div>
   </div>
   <div class="pane" id="p2">
@@ -117,7 +140,7 @@ body.tv #tv{display:block}
    <div class="mu">Si ya hay un reporte igual cerca, tu toque lo <b>confirma</b> en vez de duplicarlo. Toca un ícono del mapa para confirmarlo, cerrarlo o retirar el tuyo.</div>
   </div>
   <div class="pane" id="p3">
-   <div class="card"><h3>Tu aporte</h3><div id="me" style="font-weight:700">–</div><div class="mu" id="me2"></div><button class="go sec" id="out" type="button">Cerrar sesión</button></div>
+   <div class="card"><h3>Tu aporte</h3><div id="me" style="font-weight:700">–</div><div class="mu" id="me2"></div></div>
    <div class="card"><h3>Comunidad (últimos 7 días)</h3><div class="kpis"><div class="kpi"><b id="k1">–</b><span>reportes</span></div><div class="kpi"><b id="k2">–</b><span>confirmaciones</span></div><div class="kpi"><b id="k3">–</b><span>activos ahora</span></div></div>
     <div id="tbars" style="margin-top:10px"></div></div>
    <div class="card"><h3>Cuánto duran los reportes (cerrados por la comunidad)</h3><div id="dur" class="mu">–</div></div>
@@ -130,9 +153,49 @@ body.tv #tv{display:block}
     <button class="go" id="egb" type="button">Registrar mi ahorro</button>
     <div class="mu" style="margin-top:8px" id="eform"></div></div>
   </div>
+  <div class="pane" id="p4">
+   <details class="card" id="d-act"><summary>📋 Mi actividad</summary><div class="body"><div id="act" class="mu">–</div><button class="go sec" id="delall" type="button">Borrar todos mis reportes</button></div></details>
+   <details class="card"><summary>⚙️ Opciones</summary><div class="body">
+    <div class="set"><div>Tema<small>Cómo se ve la app</small></div><select id="s-tema"><option value="auto">Automático</option><option value="light">Claro</option><option value="dark">Oscuro</option></select></div>
+    <div class="set"><div>Alertas de reportes cercanos<small>Mensaje y vibración cuando alguien reporta accidente, congestión, obra o lluvia cerca. Funciona mientras la app esté abierta.</small></div><label class="sw"><input type="checkbox" id="s-alerta" aria-label="Alertas de reportes cercanos"><i></i></label></div>
+    <div class="set"><div>Distancia de las alertas</div><select id="s-radio"><option value="500">500 m</option><option value="1000">1 km</option><option value="2000">2 km</option><option value="5000">5 km</option></select></div>
+    <div class="set"><div>Verificación por movimiento<small>Tu celular confirma o cierra congestiones cuando pasas cerca. Solo guarda un voto anónimo, nunca tu recorrido.</small></div><label class="sw"><input type="checkbox" id="s-auto" aria-label="Verificación por movimiento"><i></i></label></div>
+   </div></details>
+   <details class="card"><summary>❓ Ayuda</summary><div class="body faq">
+    <details><summary>¿Cómo reporto algo?</summary><p>Ve a <b>Reportar</b>, elige «Mi GPS» o «Centro del mapa» y toca el tipo de reporte. Si ya hay uno igual a menos de 120 m, tu toque lo confirma. Si vas conduciendo, que reporte tu acompañante: no uses el celular al volante.</p></details>
+    <details><summary>¿Qué significan Nuevo, Confirmado y Despejándose?</summary><p><b>Nuevo:</b> lo reportó una persona. <b>Confirmado:</b> otra persona, o un celular en movimiento, lo vio. <b>Despejándose:</b> alguien dijo que ya pasó. Cuando al menos 2 personas dicen que ya está despejado y son más que las que dicen que sigue, el reporte se cierra para todos.</p></details>
+    <details><summary>¿Cuánto dura un reporte?</summary><p>Congestión 45 min, accidente 2 h, obra o cierre 4 h, parqueo 30 min, lluvia o inundación 90 min. Los daños en la vía (semáforo, hueco, señal, alcantarilla) duran hasta 30 días o hasta que la comunidad diga que ya los arreglaron.</p></details>
+    <details><summary>¿Qué es la verificación por movimiento?</summary><p>Si tienes la app abierta y pasas a más de 25 km/h por una congestión reportada, tu celular vota que ya fluye. Si venías rápido y ahora vas despacio en ese punto, vota que sigue ahí. Solo se guarda un voto anónimo. Puedes apagarla en Opciones.</p></details>
+    <details><summary>¿Por qué no veo mi ubicación?</summary><p>Abre el enlace en Chrome o Safari (WhatsApp e Instagram bloquean el GPS), permite la ubicación en el candado 🔒 de la barra de direcciones y enciende el GPS del celular. Mientras tanto puedes usar «Centro del mapa».</p></details>
+    <details><summary>¿Cómo se calcula el CO₂ evitado?</summary><p>Minutos que declaras ÷ 60 × 1,14 L/h de combustible en ralentí × 2,35 kg de CO₂ por litro. Es una estimación a partir de los minutos que cada persona declara, no una medición.</p></details>
+    <details><summary>¿La app me sigue?</summary><p>No. Solo se guarda la ubicación de los reportes que tú envías. Tu posición en tiempo real se usa en tu celular para mostrarte el mapa y no se sube a ningún servidor.</p></details>
+    <details><summary>¿Cómo la dejo en la pantalla de inicio?</summary><p><b>Android (Chrome):</b> menú ⋮ → «Agregar a pantalla de inicio». <b>iPhone (Safari):</b> botón Compartir → «Agregar a pantalla de inicio».</p></details>
+    <button class="go sec" id="onbopen" type="button">Ver la guía de inicio</button>
+   </div></details>
+   <details class="card" id="d-sup"><summary>💬 Contacto con soporte</summary><div class="body">
+    <div class="mu" style="margin-bottom:8px">Cuéntanos qué pasó. La respuesta aparece aquí mismo, en «Mis solicitudes».</div>
+    <select id="st-tipo" style="width:100%;margin-bottom:8px"><option value="problema">Tengo un problema</option><option value="sugerencia">Tengo una sugerencia</option><option value="abuso">Quiero denunciar un reporte falso o un abuso</option><option value="eliminar">Quiero eliminar mi cuenta y mis datos</option><option value="otro">Otro tema</option></select>
+    <textarea id="st-msg" maxlength="1000" placeholder="Escribe tu mensaje (mínimo 5 caracteres)"></textarea>
+    <label class="set" style="justify-content:flex-start"><input type="checkbox" id="st-diag" checked><span>Adjuntar datos técnicos (versión, navegador, estado del GPS). No incluye tu ubicación.</span></label>
+    <button class="go" id="st-send" type="button">Enviar mensaje</button>
+    <div class="mu" id="st-mail" style="margin-top:6px"></div>
+    <h3 style="margin-top:12px">Mis solicitudes</h3><div id="st-list" class="mu">–</div>
+   </div></details>
+   <details class="card"><summary>🔗 Compartir y datos</summary><div class="body">
+    <button class="go" id="share" type="button" style="margin-top:0">📲 Invitar a alguien a MOVI-INFO</button>
+    <button class="go sec" id="csv" type="button">⬇️ Descargar datos (CSV, 30 días)</button>
+    <div class="mu" style="margin-top:6px">El CSV es anónimo: tipo, ubicación, fecha y confirmaciones (máximo 1.000 reportes). En Excel: Datos → Desde texto/CSV.</div></div></details>
+   <details class="card"><summary>ℹ️ Acerca de y privacidad</summary><div class="body" style="font-size:13px;line-height:1.5">
+    <p style="margin:0 0 8px"><b>MOVI-INFO</b> · versión <span id="ver"></span><br>Proyecto académico de movilidad y reducción de contaminación (MOVI-INFO / ECO-MOV).</p>
+    <p style="margin:0 0 8px"><b>Fuentes</b><br>Mapa © OpenStreetMap · Tráfico: TomTom · Clima y aire: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (aire: modelo CAMS) · Factores de CO₂: DOE/Argonne y EPA.</p>
+    <p style="margin:0 0 8px"><b>Privacidad</b><br>Guardamos tu correo y nombre (inicio de sesión), los reportes y votos que envías, los minutos de ECO-MOV que registras y tus mensajes de soporte. No guardamos tu recorrido ni tu posición en tiempo real. Tus lugares guardados quedan solo en tu dispositivo. Puedes borrar tus reportes en «Mi actividad» y pedir la eliminación de tu cuenta en «Contacto con soporte» (Ley 1581 de 2012).</p>
+    <p style="margin:0"><b>Aviso</b><br>La información es colaborativa y estimada. No sustituye las señales de tránsito, a las autoridades ni tu criterio al conducir.</p></div></details>
+   <button class="go sec" id="out" type="button">Cerrar sesión</button>
+  </div>
  </section>
 </div>
 <div class="toast" id="toast" role="status"></div>
+<div id="onb" role="dialog" aria-modal="true"><div class="box" style="text-align:center"><div class="em" id="onb-em"></div><h2 id="onb-t" style="margin:8px 0;color:var(--ind)"></h2><p id="onb-p" style="margin:0 0 12px"></p><div id="onb-dots" class="mu" style="margin-bottom:10px"></div><button class="go" id="onb-n" type="button"></button><button class="go sec" id="onb-s" type="button">Saltar</button></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
 <script>
@@ -142,6 +205,8 @@ const CONFIG={
  SUPABASE_URL:'https://fzmjnuvfpnoqlnohffqe.supabase.co',
  SUPABASE_KEY:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6bWpudXZmcG5vcWxub2hmZnFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3MTAwMzgsImV4cCI6MjEwODI4NjAzOH0.bjFv6KmknceaFaalbD4qVzWucAocL4NR1gJGVtVkVpE',
  CENTER:[11.2408,-74.1990],
+ VERSION:'3.0',
+ SOPORTE_EMAIL:'',   // opcional: un correo para mostrar como alternativa en Soporte
  DOMINIOS_EDU:['usa.edu.co'],  // correos que se marcan como "estudiante"
  IDLE_L_H:1.14,     // L/h en ralentí: 0,3 gal/h, carro de pasajeros (Argonne / DOE-AFDC)
  KG_CO2_L:2.35      // kg CO2 por litro de gasolina: 8.887 g/galón (EPA)
@@ -159,6 +224,7 @@ const ago=t=>{const m=Math.max(0,Math.round((Date.now()-t)/6e4));return m<1?'aho
 const fmtD=m=>m<1000?Math.round(m/10)*10+' m':(m/1000).toFixed(1).replace('.',',')+' km';
 const fmt=(n,d=0)=>n.toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
 const fmtMin=m=>m<60?Math.round(m)+' min':m<2880?fmt(m/60,1)+' h':fmt(m/1440,1)+' días';
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const esEdu=m=>{m=(m||'').toLowerCase();return CONFIG.DOMINIOS_EDU.some(d=>m.endsWith('@'+d)||m.endsWith('.'+d))};
 
 // ---------- Pantalla de registro ----------
@@ -284,7 +350,7 @@ setInterval(()=>{Object.values(reps).forEach(refresh);recompute()},30000);
 // ---------- Autoverificación por movimiento ----------
 function speedKmh(p){const s=p.coords.speed;if(s!=null&&!isNaN(s))return s*3.6;
  if(lastP){const dt=((p.timestamp||Date.now())-lastP.t)/1000;if(dt>=2&&dt<=30)return map.distance(lastP.ll,[p.coords.latitude,p.coords.longitude])/dt*3.6}return null}
-function autoCheck(v){if(!sb||!USER||v<0)return;if(v>=20)lastFast=Date.now();
+function autoCheck(v){if(!sb||!USER||v<0||!SET.auto)return;if(v>=20)lastFast=Date.now();
  const near=Object.values(reps).filter(r=>r.tipo===0&&alive(r)&&r.disp!==DEV&&!MYV[r.id]&&map.distance(pos,[r.lat,r.lng])<=80);
  near.forEach(r=>{
   if(v>=25)vote(r,-1,true);                                   // pasa rápido por el lugar: la vía fluye
@@ -298,7 +364,7 @@ async function load(){if(!sb)return;const now=Date.now(),since=new Date(now-4*36
  if(ids.length){const b=await sb.from('confirmaciones').select('reporte_id,voto,auto').in('reporte_id',ids);(b.data||[]).forEach(c=>{const r=reps[c.reporte_id];if(r){c.voto>0?r.ok++:r.no++;if(c.auto)r.au++}})}
  Object.values(reps).forEach(refresh);recompute();
  sb.channel('mov')
-  .on('postgres_changes',{event:'INSERT',schema:'public',table:'reportes'},p=>{const x=p.new;if(addRep(x,true)){recompute();if(x.dispositivo!==DEV){tick(TP[x.tipo].e+' '+TP[x.tipo].k+' reportado');ripple([x.lat,x.lng]);tvFollow([x.lat,x.lng])}}})
+  .on('postgres_changes',{event:'INSERT',schema:'public',table:'reportes'},p=>{const x=p.new;if(addRep(x,true)){recompute();if(x.dispositivo!==DEV){tick(TP[x.tipo].e+' '+TP[x.tipo].k+' reportado');ripple([x.lat,x.lng]);tvFollow([x.lat,x.lng]);alertaCerca(x)}}})
   .on('postgres_changes',{event:'DELETE',schema:'public',table:'reportes'},p=>{if(p.old&&p.old.id)drop(p.old.id)})
   .on('postgres_changes',{event:'INSERT',schema:'public',table:'confirmaciones'},p=>{const c=p.new;if(c.dispositivo===DEV)return;const r=reps[c.reporte_id];if(!r)return;c.voto>0?r.ok++:r.no++;if(c.auto)r.au++;refresh(r);recompute();
    tick(c.auto?'🛰️ Un celular en movimiento verificó un reporte':c.voto>0?'👍 Reporte confirmado':'🟢 Reporte cerrado por la comunidad')})
@@ -307,9 +373,105 @@ let PPL=0;
 function startPresence(){if(!sb)return;const ch=sb.channel('online',{config:{presence:{key:DEV}}});
  ch.on('presence',{event:'sync'},()=>{PPL=Object.keys(ch.presenceState()).length;$('#ppl').textContent='👥 '+PPL;tvUpd()}).subscribe(s=>{if(s==='SUBSCRIBED')ch.track({t:Date.now()})})}
 
+// ---------- Opciones ----------
+const SET={tema:'auto',alerta:false,radio:1000,auto:true};
+const saveSet=()=>LS.set('mov_set_'+DEV,JSON.stringify(SET));
+function applyTema(){if(SET.tema==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',SET.tema)}
+function loadSet(){try{Object.assign(SET,JSON.parse(LS.get('mov_set_'+DEV,'{}')))}catch(e){}
+ $('#s-tema').value=SET.tema;$('#s-alerta').checked=!!SET.alerta;$('#s-radio').value=String(SET.radio);$('#s-auto').checked=SET.auto!==false;applyTema();$('#ver').textContent=CONFIG.VERSION}
+$('#s-tema').onchange=e=>{SET.tema=e.target.value;applyTema();saveSet()};
+$('#s-radio').onchange=e=>{SET.radio=+e.target.value;saveSet()};
+$('#s-auto').onchange=e=>{SET.auto=e.target.checked;saveSet();toast(SET.auto?'Verificación por movimiento activada':'Verificación por movimiento apagada')};
+$('#s-alerta').onchange=async e=>{SET.alerta=e.target.checked;saveSet();
+ if(SET.alerta){try{if('Notification' in window&&Notification.permission==='default')await Notification.requestPermission()}catch(x){}toast('Alertas activadas: te aviso mientras la app esté abierta')}else toast('Alertas apagadas')};
+const ALERTA_T=[0,1,2,5];
+function alertaCerca(x){if(!SET.alerta||x.dispositivo===DEV||!ALERTA_T.includes(x.tipo))return;
+ const d=map.distance(here(),[x.lat,x.lng]);if(d>SET.radio)return;
+ const msg=`${TP[x.tipo].e} ${TP[x.tipo].k} a ${fmtD(d)}`;toast(msg);
+ try{navigator.vibrate&&navigator.vibrate([180,80,180])}catch(e){}
+ try{if(document.hidden&&'Notification' in window&&Notification.permission==='granted')new Notification('MOVI-INFO',{body:msg})}catch(e){}}
+
+// ---------- Mis lugares ----------
+let PLC=[],lastPl='';const PF={};
+const savePlaces=()=>LS.set('mov_places_'+DEV,JSON.stringify(PLC));
+function loadPlaces(){try{PLC=JSON.parse(LS.get('mov_places_'+DEV,'[]'))}catch(e){PLC=[]}PLC.forEach(placeFlow);renderPlaces()}
+async function placeFlow(p){if(!CONFIG.TOMTOM_KEY)return;const c=PF[p.id];if(c&&Date.now()-c.t<110000)return;PF[p.id]={q:null,cur:null,t:Date.now()};
+ try{const r=await fetch(`https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json?key=${CONFIG.TOMTOM_KEY}&point=${p.lat},${p.lng}`);const f=(await r.json()).flowSegmentData;PF[p.id]={q:f.currentSpeed/f.freeFlowSpeed,cur:f.currentSpeed,t:Date.now()};renderPlaces()}catch(e){}}
+function placeLvl(p){const near=Object.values(reps).filter(r=>r.tipo<=5&&alive(r)&&map.distance([p.lat,p.lng],[r.lat,r.lng])<=1000);
+ const n=t=>near.filter(r=>r.tipo===t).length,f=PF[p.id]&&PF[p.id].q;let l=0;
+ if(n(1)>0||n(0)>=2||(f!=null&&f<.5))l=2;else if(n(0)===1||n(2)>0||n(5)>0||(f!=null&&f<.8))l=1;return{l,n:near.length,cur:PF[p.id]&&PF[p.id].cur}}
+function renderPlaces(){const el=$('#plist');if(!el)return;
+ if(!PLC.length){if(lastPl!=='vacio'){el.textContent='Guarda tu casa, la universidad o el trabajo para ver cómo está el tráfico ahí.';lastPl='vacio'}return}
+ const col=['#2faa5b','#d68b0a','#d64545'],tx=['Despejado','Moderado','Pesado'];
+ const h=PLC.map(p=>{const s=placeLvl(p);return`<div class="plc"><span style="cursor:pointer" data-go="${p.id}"><b>${esc(p.n)}</b><br><span class="mu">${s.n} reporte${s.n===1?'':'s'} a 1 km${s.cur!=null?' · '+Math.round(s.cur)+' km/h':''}</span></span><span><span class="chip" style="background:${col[s.l]}">${tx[s.l]}</span> <button class="x" data-del="${p.id}" aria-label="Quitar ${esc(p.n)}">✕</button></span></div>`}).join('');
+ if(h!==lastPl){el.innerHTML=h;lastPl=h}}
+$('#plist').onclick=e=>{const d=e.target.closest('[data-del]'),g=e.target.closest('[data-go]');
+ if(d){PLC=PLC.filter(p=>String(p.id)!==d.dataset.del);savePlaces();renderPlaces()}
+ else if(g){const p=PLC.find(x=>String(x.id)===g.dataset.go);if(p)map.flyTo([p.lat,p.lng],15)}};
+$('#padd').onclick=()=>{if(PLC.length>=3){toast('Máximo 3 lugares: quita uno primero');return}
+ const n=$('#pname').value.trim().slice(0,20);if(!n){toast('Ponle un nombre al lugar');return}
+ const[lat,lng]=here(),p={id:Date.now(),n,lat:+lat.toFixed(5),lng:+lng.toFixed(5)};PLC.push(p);savePlaces();$('#pname').value='';placeFlow(p);renderPlaces();toast('Guardado: '+n+(pos?' (tu ubicación)':' (centro del mapa)'))};
+setInterval(()=>PLC.forEach(placeFlow),120000);
+
+// ---------- Mi actividad ----------
+async function loadAct(){const el=$('#act');if(!sb||!USER)return;
+ const x=await sb.from('reportes').select('id,tipo,created_at').eq('dispositivo',DEV).order('created_at',{ascending:false}).limit(15);
+ if(x.error){el.textContent='No se pudo cargar tu actividad.';return}
+ if(!x.data.length){el.textContent='Aún no has hecho reportes. Ve a Reportar y toca uno.';return}
+ el.innerHTML=x.data.map(r=>{const rp=reps[r.id],vivo=rp&&alive(rp),t=TP[r.tipo];
+  return`<div class="plc"><span>${t.e} <b>${t.k}</b><br><span class="mu">${ago(Date.parse(r.created_at))} · ${vivo?`activo · ${rp.ok} confirman`:'ya caducó o se cerró'}</span></span>${vivo?`<button class="chip" style="background:var(--ind2)" data-ret="${r.id}">Retirar</button>`:''}</div>`}).join('')}
+$('#act').onclick=async e=>{const b=e.target.closest('[data-ret]');if(b&&reps[b.dataset.ret]){await retire(reps[b.dataset.ret]);loadAct()}};
+$('#delall').onclick=async()=>{if(!sb||!USER)return;if(!confirm('¿Borrar TODOS tus reportes? Esta acción no se puede deshacer.'))return;
+ const x=await sb.from('reportes').delete().eq('dispositivo',DEV).select('id');if(x.error){toast('No se pudo borrar');return}
+ const d=x.data||[];d.forEach(r=>drop(r.id));toast(`Se borraron ${d.length} reportes`);loadAct()};
+$('#d-act').addEventListener('toggle',e=>{if(e.target.open)loadAct()});
+
+// ---------- Soporte ----------
+const ST_T={problema:'Problema',sugerencia:'Sugerencia',abuso:'Abuso',eliminar:'Eliminar cuenta',otro:'Otro'};
+async function loadTk(){const el=$('#st-list');if(!sb||!USER)return;
+ const x=await sb.from('soporte').select('id,tipo,mensaje,estado,respuesta,created_at').eq('dispositivo',DEV).order('created_at',{ascending:false}).limit(10);
+ if(x.error){el.textContent=(x.error.code==='42P01'||/soporte/.test(x.error.message||''))?'Soporte aún no está activado en la base de datos.':'No se pudo cargar.';return}
+ el.innerHTML=x.data.length?x.data.map(t=>`<div class="tk"><span class="pill">${esc(ST_T[t.tipo]||t.tipo)}</span> <span class="pill" style="background:${t.estado==='resuelto'?'var(--lgr)':'var(--ln)'}">${esc(t.estado)}</span> <span class="mu">${ago(Date.parse(t.created_at))}</span><div>${esc(t.mensaje)}</div>${t.respuesta?`<div style="margin-top:4px;padding:6px 8px;background:var(--lgr);border-radius:8px"><b>Respuesta:</b> ${esc(t.respuesta)}</div>`:''}</div>`).join(''):'Aún no has enviado solicitudes.'}
+let lastSt=0;
+$('#st-send').onclick=async()=>{if(!sb||!USER)return;const m=$('#st-msg').value.trim();
+ if(m.length<5){toast('Escribe al menos 5 caracteres');return}if(Date.now()-lastSt<60000){toast('Espera un minuto antes de enviar otro mensaje');return}
+ const diag=$('#st-diag').checked?JSON.stringify({v:CONFIG.VERSION,ua:navigator.userAgent.slice(0,160),gps:pos?('±'+Math.round(acc)+' m'):'sin GPS',inapp:INAPP,tema:SET.tema,pantalla:innerWidth+'x'+innerHeight,en:new Date().toISOString()}):null;
+ $('#st-send').disabled=true;
+ const x=await sb.from('soporte').insert({dispositivo:DEV,tipo:$('#st-tipo').value,mensaje:m.slice(0,1000),diag});
+ $('#st-send').disabled=false;
+ if(x.error){toast(x.error.code==='42P01'?'Soporte aún no está activado (falta crear la tabla)':'No se pudo enviar. Intenta de nuevo.');return}
+ lastSt=Date.now();$('#st-msg').value='';toast('Mensaje enviado. La respuesta aparecerá aquí.');loadTk()};
+$('#d-sup').addEventListener('toggle',e=>{if(e.target.open){loadTk();if(CONFIG.SOPORTE_EMAIL)$('#st-mail').innerHTML='También puedes escribir a <a href="mailto:'+esc(CONFIG.SOPORTE_EMAIL)+'">'+esc(CONFIG.SOPORTE_EMAIL)+'</a>'}});
+
+// ---------- Compartir y descargar datos ----------
+$('#share').onclick=async()=>{const url=location.origin+location.pathname,text='Reporta tráfico, accidentes y daños en la vía de tu ciudad y ayuda a reducir la contaminación.';
+ try{if(navigator.share){await navigator.share({title:'MOVI-INFO',text,url});return}}catch(e){if(e&&e.name==='AbortError')return}
+ try{await navigator.clipboard.writeText(url);toast('Enlace copiado')}catch(e){toast(url)}};
+$('#csv').onclick=async()=>{if(!sb||!USER)return;toast('Preparando datos…');
+ const s30=new Date(Date.now()-30*864e5).toISOString();
+ const a=await sb.from('reportes').select('id,tipo,lat,lng,created_at').gte('created_at',s30).order('created_at').limit(1000);
+ if(a.error){toast('No se pudo descargar');return}
+ const ids=a.data.map(r=>r.id),cnt={};
+ for(let i=0;i<ids.length;i+=150){const b=await sb.from('confirmaciones').select('reporte_id,voto,auto').in('reporte_id',ids.slice(i,i+150)).limit(1000);
+  (b.data||[]).forEach(c=>{const o=cnt[c.reporte_id]=cnt[c.reporte_id]||{ok:0,no:0,au:0};c.voto>0?o.ok++:o.no++;if(c.auto)o.au++})}
+ const hd='id,tipo,categoria,latitud,longitud,fecha_hora_bogota,confirmaciones,cierres,verificaciones_movimiento';
+ const rows=a.data.map(r=>{const c=cnt[r.id]||{ok:0,no:0,au:0};return[r.id,r.tipo,'"'+TP[r.tipo].k+'"',r.lat,r.lng,new Date(r.created_at).toLocaleString('sv-SE',{timeZone:'America/Bogota'}),c.ok,c.no,c.au].join(',')});
+ const blob=new Blob(['﻿'+hd+'\n'+rows.join('\n')],{type:'text/csv;charset=utf-8'}),u=URL.createObjectURL(blob),l=document.createElement('a');
+ l.href=u;l.download='movi-info-reportes.csv';document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast(`Descargados ${rows.length} reportes`)};
+
+// ---------- Guía de inicio ----------
+const ONB=[['📍','Mira tu ciudad en vivo','El mapa muestra tráfico real, clima, calidad del aire y los reportes de la comunidad.'],['👆','Reporta en 2 toques','Ve a Reportar y elige qué pasa: congestión, accidente, obra, parqueo, lluvia o un daño en la vía.'],['🟢','Confirma y cierra','Toca un ícono del mapa para confirmarlo o decir que ya está despejado. Los reportes caducan solos.'],['🌱','Menos espera, menos contaminación','Cada minuto menos parado en el tráfico es combustible y CO₂ que no se emiten. Mira tu aporte en Impacto.']];
+let onbI=0;
+function onbShow(){const s=ONB[onbI];$('#onb-em').textContent=s[0];$('#onb-t').textContent=s[1];$('#onb-p').textContent=s[2];
+ $('#onb-n').textContent=onbI===ONB.length-1?'¡Empezar!':'Siguiente';$('#onb-dots').textContent=ONB.map((_,i)=>i===onbI?'●':'○').join(' ')}
+function onbOpen(){onbI=0;onbShow();$('#onb').style.display='flex'}
+function onbClose(){$('#onb').style.display='none';LS.set('mov_onb_'+DEV,'1')}
+function onbMaybe(){if(!LS.get('mov_onb_'+DEV,''))onbOpen()}
+$('#onb-n').onclick=()=>{if(onbI>=ONB.length-1)onbClose();else{onbI++;onbShow()}};$('#onb-s').onclick=onbClose;$('#onbopen').onclick=()=>{onbOpen()};
+
 // ---------- Entrar a la app ----------
 function enter(u){if(USER)return;USER=u;DEV=u.id;MYV={};try{MYV=JSON.parse(LS.get('mov_votos_'+DEV,'{}'))}catch(e){}
- $('#auth').style.display='none';startGPS();load();startPresence();weather();traffic();air();recompute()}
+ $('#auth').style.display='none';loadSet();loadPlaces();startGPS();load();startPresence();weather();traffic();air();recompute();onbMaybe()}
 if(sb){sb.auth.getSession().then(r=>{if(r&&r.data&&r.data.session)enter(r.data.session.user)}).catch(()=>{});
  sb.auth.onAuthStateChange((ev,s)=>{if(s&&s.user&&!USER)enter(s.user)})}
 $('#out').onclick=async()=>{try{await sb.auth.signOut()}catch(e){}location.reload()};
@@ -360,7 +522,7 @@ function recompute(){const c=pos||[map.getCenter().lat,map.getCenter().lng],R=15
  if(fr)why.push(`🅿️ Parqueo libre reportado a ${fmtD(fr.d)}`);else if(fu)why.push(`🅿️ Parqueo lleno a ${fmtD(fu.d)}: busca otra zona antes de dar vueltas`);
  if(!why.length)why.push(sb?'Sin reportes cercanos en este momento':'Conecta la base de datos para ver reportes');
  const el=$('#rec');el.className='card rec l'+lvl;
- el.innerHTML=`<div class="t">${T[lvl]}</div><ul>${why.map(w=>`<li>${w.replace(/[<>&]/g,'')}</li>`).join('')}</ul><div class="mu" style="margin-top:6px">Basado en TomTom, el clima, el aire y ${near.length} reporte${near.length===1?'':'s'} vigente${near.length===1?'':'s'} de la comunidad en 1,5 km.</div>`}
+ el.innerHTML=`<div class="t">${T[lvl]}</div><ul>${why.map(w=>`<li>${w.replace(/[<>&]/g,'')}</li>`).join('')}</ul><div class="mu" style="margin-top:6px">Basado en TomTom, el clima, el aire y ${near.length} reporte${near.length===1?'':'s'} vigente${near.length===1?'':'s'} de la comunidad en 1,5 km.</div>`;renderPlaces()}
 
 // ---------- Impacto, duración real y ECO-MOV ----------
 const co2=min=>min/60*CONFIG.IDLE_L_H*CONFIG.KG_CO2_L;
