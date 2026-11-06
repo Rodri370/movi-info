@@ -302,9 +302,14 @@ $('#af').onsubmit=async e=>{e.preventDefault();if(!sb)return aerr('Falta conecta
  $('#ab').disabled=false};
 
 // ---------- Mapa ----------
-const map=L.map('map',{zoomControl:false}).setView(CONFIG.CENTER,14);map.attributionControl.setPrefix(false); // sin bandera/enlace de Leaflet; se conservan los créditos de OSM y TomTom
+const map=L.map('map',{zoomControl:false}).setView(CONFIG.CENTER,14);map.attributionControl&&map.attributionControl.setPrefix(false); // sin bandera/enlace de Leaflet; se conservan los créditos de OSM y TomTom
 L.control.zoom({position:'topright'}).addTo(map);
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);
+// Mapa base estilo Apple Maps: claro y suave (Voyager), oscuro automático (CARTO + OpenStreetMap)
+let base=null,baseDark=null;
+function baseMap(){const t=document.documentElement.getAttribute('data-theme'),dark=t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);
+ if(base&&baseDark===dark)return;baseDark=dark;if(base&&map.removeLayer)map.removeLayer(base);
+ base=L.tileLayer(`https://{s}.basemaps.cartocdn.com/rastertiles/${dark?'dark_all':'voyager'}/{z}/{x}/{y}{r}.png`,{subdomains:'abcd',maxZoom:20,detectRetina:true,attribution:'&copy; OpenStreetMap &copy; CARTO'}).addTo(map);base&&base.bringToBack&&base.bringToBack()}
+baseMap();try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',baseMap)}catch(e){}
 if(CONFIG.TOMTOM_KEY)L.tileLayer(`https://api.tomtom.com/traffic/map/4/tile/flow/relative/{z}/{x}/{y}.png?key=${CONFIG.TOMTOM_KEY}`,{opacity:.85,maxZoom:18,attribution:'Tráfico &copy; TomTom'}).addTo(map);
 const layer=L.layerGroup().addTo(map);
 addEventListener('resize',()=>map.invalidateSize());
@@ -417,7 +422,7 @@ function startPresence(){if(!sb)return;const ch=sb.channel('online',{config:{pre
 // ---------- Opciones ----------
 const SET={tema:'auto',alerta:false,radio:1000,auto:true};
 const saveSet=()=>LS.set('mov_set_'+DEV,JSON.stringify(SET));
-function applyTema(){if(SET.tema==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',SET.tema)}
+function applyTema(){if(SET.tema==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',SET.tema);if(typeof baseMap==='function')baseMap()}
 function loadSet(){try{Object.assign(SET,JSON.parse(LS.get('mov_set_'+DEV,'{}')))}catch(e){}
  $('#s-tema').value=SET.tema;$('#s-alerta').checked=!!SET.alerta;$('#s-radio').value=String(SET.radio);$('#s-auto').checked=SET.auto!==false;applyTema();$('#ver').textContent=CONFIG.VERSION}
 $('#s-tema').onchange=e=>{SET.tema=e.target.value;applyTema();saveSet()};
