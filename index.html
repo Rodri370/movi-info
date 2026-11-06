@@ -119,6 +119,8 @@ body.tv #tv{display:block}
 .tabs button{border:0;border-radius:14px;padding:8px 2px 7px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;font-weight:600;transition:background .15s,color .15s}
 .tabs button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .tabs button[aria-selected=true]{background:color-mix(in srgb,var(--ind2) 13%,transparent);color:var(--ind2)}
+.basemap{filter:saturate(.8) brightness(1.04) contrast(.94)}
+.mapdk .basemap{filter:invert(1) hue-rotate(180deg) saturate(.7) brightness(.92) contrast(.9)}
 </style></head><body>
 <div id="auth"><form class="authc" id="af" novalidate>
  <h2>MOVI-INFO</h2><div class="mu" style="margin-bottom:14px">Reportes de la comunidad para mover mejor la ciudad</div>
@@ -304,11 +306,11 @@ $('#af').onsubmit=async e=>{e.preventDefault();if(!sb)return aerr('Falta conecta
 // ---------- Mapa ----------
 const map=L.map('map',{zoomControl:false}).setView(CONFIG.CENTER,14);map.attributionControl&&map.attributionControl.setPrefix(false); // sin bandera/enlace de Leaflet; se conservan los créditos de OSM y TomTom
 L.control.zoom({position:'topright'}).addTo(map);
-// Mapa base estilo Apple Maps: claro y suave (Voyager), oscuro automático (CARTO + OpenStreetMap)
+// Mapa base: OpenStreetMap suavizado; en modo oscuro se invierte solo el mapa (no el tráfico ni los iconos)
 let base=null,baseDark=null;
 function baseMap(){const t=document.documentElement.getAttribute('data-theme'),dark=t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);
- if(base&&baseDark===dark)return;baseDark=dark;if(base&&map.removeLayer)map.removeLayer(base);
- base=L.tileLayer(`https://{s}.basemaps.cartocdn.com/rastertiles/${dark?'dark_all':'voyager'}/{z}/{x}/{y}{r}.png`,{subdomains:'abcd',maxZoom:20,detectRetina:true,attribution:'&copy; OpenStreetMap &copy; CARTO'}).addTo(map);base&&base.bringToBack&&base.bringToBack()}
+ document.documentElement.classList.toggle('mapdk',dark);baseDark=dark;
+ if(!base){base=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,className:'basemap',attribution:'&copy; OpenStreetMap'}).addTo(map);base&&base.bringToBack&&base.bringToBack()}}
 baseMap();try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',baseMap)}catch(e){}
 if(CONFIG.TOMTOM_KEY)L.tileLayer(`https://api.tomtom.com/traffic/map/4/tile/flow/relative/{z}/{x}/{y}.png?key=${CONFIG.TOMTOM_KEY}`,{opacity:.85,maxZoom:18,attribution:'Tráfico &copy; TomTom'}).addTo(map);
 const layer=L.layerGroup().addTo(map);
