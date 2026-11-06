@@ -96,6 +96,29 @@ body.tv #tv{display:block}
 #tvx{position:absolute;right:12px;top:12px;z-index:700;background:#fff;border:0;border-radius:10px;padding:8px 12px;font:inherit;font-weight:700;cursor:pointer}
 @media(min-width:900px){.app{flex-direction:row-reverse}#sheet{width:420px;max-height:none;border-top:0;border-right:1px solid var(--ln)}body.tv #tvk b{font-size:44px}}
 :focus-visible{outline:3px solid var(--ind2);outline-offset:2px}
+
+/* ===== v4: iconos propios (estilo Apple + degradado + volumen) ===== */
+:root{--sh1:0 1px 2px rgba(20,18,60,.06),0 8px 24px rgba(20,18,60,.08)}
+.card{border-radius:20px;box-shadow:var(--sh1);border:0}
+.ic{display:inline-flex;vertical-align:-4px;width:20px;height:20px;border-radius:7px;align-items:center;justify-content:center;background:linear-gradient(160deg,var(--c2,var(--c)),var(--c));margin-right:5px}
+.ic svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pin{width:40px;height:40px;border:0;border-radius:50%;background:linear-gradient(155deg,var(--c2,var(--c)),var(--c));box-shadow:0 0 0 3px rgba(255,255,255,.92),0 6px 14px rgba(15,12,50,.38),inset 0 1px 1px rgba(255,255,255,.55);position:relative}
+.pin svg{width:25px;height:25px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+.pin:after{content:'';position:absolute;left:50%;bottom:-8px;width:12px;height:12px;background:var(--c);transform:translateX(-50%) rotate(45deg);border-radius:0 0 4px 0;z-index:-1;box-shadow:3px 3px 6px rgba(15,12,50,.25)}
+.pin.st{border-radius:13px}.pin.st:after{display:none}
+.pin.st:before{content:'';position:absolute;inset:3px;border:1.5px dashed rgba(255,255,255,.65);border-radius:10px}
+.pin em{right:-7px;top:-7px;background:#fff;color:var(--c);box-shadow:0 2px 5px rgba(0,0,0,.28);font:800 10px -apple-system,system-ui,Arial;min-width:16px;text-align:center;padding:1px 4px}
+.pin.new:before{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--c);animation:pul 1.6s ease-out 3}
+@keyframes pul{from{transform:scale(.8);opacity:.9}to{transform:scale(1.7);opacity:0}}
+@media (prefers-reduced-motion:reduce){.pin.new:before{animation:none}}
+.rbtn{border:0;border-radius:18px;box-shadow:var(--sh1);padding:12px 10px;min-height:66px;gap:11px;transition:transform .12s}
+.rbtn:active{transform:scale(.96)}
+.rbtn span{width:42px;height:42px;flex:none;border-radius:13px;display:flex;align-items:center;justify-content:center;background:linear-gradient(155deg,var(--c2,var(--c)),var(--c));box-shadow:inset 0 1px 1px rgba(255,255,255,.5),0 3px 8px color-mix(in srgb,var(--c) 40%,transparent)}
+.rbtn span svg{width:27px;height:27px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tabs{padding:6px 8px;gap:4px;border-bottom:0;background:var(--card);box-shadow:0 1px 0 var(--ln)}
+.tabs button{border:0;border-radius:14px;padding:8px 2px 7px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;font-weight:600;transition:background .15s,color .15s}
+.tabs button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tabs button[aria-selected=true]{background:color-mix(in srgb,var(--ind2) 13%,transparent);color:var(--ind2)}
 </style></head><body>
 <div id="auth"><form class="authc" id="af" novalidate>
  <h2>MOVI-INFO</h2><div class="mu" style="margin-bottom:14px">Reportes de la comunidad para mover mejor la ciudad</div>
@@ -219,6 +242,24 @@ const saveV=()=>LS.set('mov_votos_'+DEV,JSON.stringify(MYV));
 const TP=[{k:'Congestión',e:'🚗',c:'#e5a524',ttl:45},{k:'Accidente',e:'⚠️',c:'#d64545',ttl:120},{k:'Obra o cierre',e:'🚧',c:'#ea580c',ttl:240},
  {k:'Parqueo lleno',e:'🅿️',c:'#9333ea',ttl:30},{k:'Parqueo libre',e:'🅿️',c:'#16a34a',ttl:30},{k:'Lluvia o inundación',e:'🌧️',c:'#2563eb',ttl:90},
  {k:'Semáforo dañado',e:'🚦',c:'#0e7490',ttl:43200},{k:'Hueco en la vía',e:'🕳️',c:'#78350f',ttl:43200},{k:'Señal dañada o faltante',e:'🛑',c:'#be123c',ttl:43200},{k:'Alcantarilla tapada',e:'🌊',c:'#1d4ed8',ttl:43200}];
+
+const SV={
+ 0:'<path d="M5 17v2m14-2v2M4 17h16v-5l-2-5H6l-2 5z"/><circle cx="8" cy="14" r=".6"/><circle cx="16" cy="14" r=".6"/><path d="M4 12h16"/>',
+ 1:'<path d="M12 4 3 19.5h18z"/><path d="M12 10v4.5M12 17.2v.1"/>',
+ 2:'<path d="M9.5 4h5l4 15h-13z"/><path d="M7.7 11h8.6M6.6 15h10.8M3 19.5h18"/>',
+ 3:'<rect x="4" y="4" width="16" height="16" rx="4.5"/><path d="M10 16.5v-9h3a2.6 2.6 0 0 1 0 5.2h-3"/><path d="M5 19 19 5"/>',
+ 4:'<rect x="4" y="4" width="16" height="16" rx="4.5"/><path d="M10 16.5v-9h3a2.6 2.6 0 0 1 0 5.2h-3"/>',
+ 5:'<path d="M7.5 14.5a4 4 0 0 1 .4-8 5.2 5.2 0 0 1 9.9 1.6 3.2 3.2 0 0 1-.8 6.4z"/><path d="M9 17.5l-1 2.5M13 17.5l-1 2.5M17 17.5l-1 2.5"/>',
+ 6:'<rect x="8" y="3" width="8" height="18" rx="3.5"/><circle cx="12" cy="8" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="16" r="1"/>',
+ 7:'<ellipse cx="12" cy="15" rx="7.5" ry="3.5"/><path d="M4.5 15v-3M19.5 15v-3M8 8l1.6 2.2M16 8l-1.6 2.2M12 6v2.4"/>',
+ 8:'<path d="M8.6 3h6.8L21 8.6v6.8L15.4 21H8.6L3 15.4V8.6z"/><path d="M12 8v5M12 16.2v.1"/>',
+ 9:'<circle cx="12" cy="12" r="8.5"/><path d="M7.5 9.7h9M7.5 14.3h9M12 3.5v17"/>'};
+const G2=['#f5c04a','#ff7a6e','#ffa05a','#c186f5','#4cd97b','#5aa2ff','#2cb7d4','#a86a3e','#f0527a','#4f86f7'];
+TP.forEach((t,i)=>{t.i=SV[i];t.c2=G2[i]});
+const svg=i=>`<svg viewBox="0 0 24 24" aria-hidden="true">${TP[i].i}</svg>`;
+const ic=i=>`<i class="ic" style="--c:${TP[i].c};--c2:${TP[i].c2}">${svg(i)}</i>`;
+const TABI=['<path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.6"/>','<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>','<path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14"/><path d="M5 19c3-4 6-6 9-8"/>','<circle cx="12" cy="12" r="9"/><circle cx="8" cy="12" r=".6"/><circle cx="12" cy="12" r=".6"/><circle cx="16" cy="12" r=".6"/>'];
+document.querySelectorAll('.tabs button').forEach((b,i)=>b.insertAdjacentHTML('afterbegin',`<svg viewBox="0 0 24 24" aria-hidden="true">${TABI[i]}</svg>`));
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>t.style.display='none',2800)}
 const ago=t=>{const m=Math.max(0,Math.round((Date.now()-t)/6e4));return m<1?'ahora':m<60?`hace ${m} min`:m<2880?`hace ${Math.round(m/60)} h`:`hace ${Math.round(m/1440)} días`};
 const fmtD=m=>m<1000?Math.round(m/10)*10+' m':(m/1000).toFixed(1).replace('.',',')+' km';
@@ -261,7 +302,7 @@ $('#af').onsubmit=async e=>{e.preventDefault();if(!sb)return aerr('Falta conecta
  $('#ab').disabled=false};
 
 // ---------- Mapa ----------
-const map=L.map('map',{zoomControl:false}).setView(CONFIG.CENTER,14);
+const map=L.map('map',{zoomControl:false}).setView(CONFIG.CENTER,14);map.attributionControl.setPrefix(false); // sin bandera/enlace de Leaflet; se conservan los créditos de OSM y TomTom
 L.control.zoom({position:'topright'}).addTo(map);
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);
 if(CONFIG.TOMTOM_KEY)L.tileLayer(`https://api.tomtom.com/traffic/map/4/tile/flow/relative/{z}/{x}/{y}.png?key=${CONFIG.TOMTOM_KEY}`,{opacity:.85,maxZoom:18,attribution:'Tráfico &copy; TomTom'}).addTo(map);
@@ -305,9 +346,9 @@ const reps={};
 const isSt=r=>r.tipo>=6;
 const alive=r=>(Date.now()-r.t)/6e4<TP[r.tipo].ttl&&!(r.no>=2&&r.no>r.ok);
 const estado=r=>r.no>0?(isSt(r)?'Reparación reportada':'Despejándose'):r.ok>0?'Confirmado':'Nuevo';
-const mkIcon=(r,isNew)=>L.divIcon({className:'',iconSize:[36,36],iconAnchor:[18,18],html:`<div class="pin${isSt(r)?' st':''}${isNew?' new':''}" style="--c:${TP[r.tipo].c}">${TP[r.tipo].e}${r.ok>0?`<em>${r.ok}</em>`:''}</div>`});
+const mkIcon=(r,isNew)=>L.divIcon({className:'',iconSize:[40,40],iconAnchor:[20,20],html:`<div class="pin${isSt(r)?' st':''}${isNew?' new':''}" style="--c:${TP[r.tipo].c};--c2:${TP[r.tipo].c2}">${svg(r.tipo)}${r.ok>0?`<em>${r.ok}</em>`:''}</div>`});
 function popup(r){const t=TP[r.tipo],st=isSt(r),d=document.createElement('div');d.className='pp';
- d.innerHTML=`<b>${t.e} ${t.k}</b><div class="m">${estado(r)} · ${st?'abierto':'reportado'} ${ago(r.t)}</div><div class="m">${r.ok} confirman · ${r.no} ${st?'dicen que ya lo arreglaron':'dicen que ya está despejado'}${r.au?` · 🛰️ ${r.au} por movimiento`:''}</div>`;
+ d.innerHTML=`<b>${ic(r.tipo)}${t.k}</b><div class="m">${estado(r)} · ${st?'abierto':'reportado'} ${ago(r.t)}</div><div class="m">${r.ok} confirman · ${r.no} ${st?'dicen que ya lo arreglaron':'dicen que ya está despejado'}${r.au?` · 🛰️ ${r.au} por movimiento`:''}</div>`;
  const note=s=>{const x=document.createElement('div');x.className='m';x.textContent=s;d.appendChild(x)};
  const btn=(l,f)=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>{f();r.m&&r.m.closePopup()};d.appendChild(b)};
  if(r.disp===DEV){note('Este reporte es tuyo.');btn('🗑️ Retirar mi reporte',()=>retire(r))}
@@ -339,8 +380,8 @@ async function report(tipo){if(!sb){toast('Falta conectar la base de datos');ret
  const x=await sb.from('reportes').insert({tipo,lat,lng,dispositivo:DEV}).select().single();
  if(x.error||!x.data){toast('No se pudo enviar el reporte');return}
  lastR=Date.now();addRep(x.data,true);recompute();tick(TP[tipo].e+' '+TP[tipo].k+' reportado');ripple([lat,lng]);toast('Reporte enviado: '+TP[tipo].k)}
-$('#rg').innerHTML=TP.slice(0,6).map((t,i)=>`<button class="rbtn" type="button" data-k="${i}" style="--c:${t.c}"><span>${t.e}</span>${t.k}</button>`).join('');
-$('#rs').innerHTML=TP.slice(6).map((t,i)=>`<button class="rbtn" type="button" data-k="${i+6}" style="--c:${t.c}"><span>${t.e}</span>${t.k}</button>`).join('');
+$('#rg').innerHTML=TP.slice(0,6).map((t,i)=>`<button class="rbtn" type="button" data-k="${i}" style="--c:${t.c};--c2:${t.c2}"><span>${svg(TP.indexOf(t))}</span>${t.k}</button>`).join('');
+$('#rs').innerHTML=TP.slice(6).map((t,i)=>`<button class="rbtn" type="button" data-k="${i+6}" style="--c:${t.c};--c2:${t.c2}"><span>${svg(TP.indexOf(t))}</span>${t.k}</button>`).join('');
 $('#rg').onclick=$('#rs').onclick=e=>{const b=e.target.closest('button');if(b)report(+b.dataset.k)};
 $('#clr').onclick=()=>{const c=here();
  const n=Object.values(reps).filter(r=>r.tipo<=5&&alive(r)&&r.disp!==DEV&&!MYV[r.id]&&map.distance(c,[r.lat,r.lng])<=200).sort((a,b)=>map.distance(c,[a.lat,a.lng])-map.distance(c,[b.lat,b.lng]))[0];
@@ -419,7 +460,7 @@ async function loadAct(){const el=$('#act');if(!sb||!USER)return;
  if(x.error){el.textContent='No se pudo cargar tu actividad.';return}
  if(!x.data.length){el.textContent='Aún no has hecho reportes. Ve a Reportar y toca uno.';return}
  el.innerHTML=x.data.map(r=>{const rp=reps[r.id],vivo=rp&&alive(rp),t=TP[r.tipo];
-  return`<div class="plc"><span>${t.e} <b>${t.k}</b><br><span class="mu">${ago(Date.parse(r.created_at))} · ${vivo?`activo · ${rp.ok} confirman`:'ya caducó o se cerró'}</span></span>${vivo?`<button class="chip" style="background:var(--ind2)" data-ret="${r.id}">Retirar</button>`:''}</div>`}).join('')}
+  return`<div class="plc"><span>${ic(TP.indexOf(t))}<b>${t.k}</b><br><span class="mu">${ago(Date.parse(r.created_at))} · ${vivo?`activo · ${rp.ok} confirman`:'ya caducó o se cerró'}</span></span>${vivo?`<button class="chip" style="background:var(--ind2)" data-ret="${r.id}">Retirar</button>`:''}</div>`}).join('')}
 $('#act').onclick=async e=>{const b=e.target.closest('[data-ret]');if(b&&reps[b.dataset.ret]){await retire(reps[b.dataset.ret]);loadAct()}};
 $('#delall').onclick=async()=>{if(!sb||!USER)return;if(!confirm('¿Borrar TODOS tus reportes? Esta acción no se puede deshacer.'))return;
  const x=await sb.from('reportes').delete().eq('dispositivo',DEV).select('id');if(x.error){toast('No se pudo borrar');return}
@@ -545,15 +586,15 @@ async function loadImpact(){$('#eform').textContent=`Fórmula: minutos ÷ 60 × 
  const a=await sb.from('reportes').select('id,tipo,created_at').gte('created_at',s7).limit(1000);
  if(!a.error){const d=a.data;$('#k1').textContent=fmt(d.length);
   const cnt=TP.map((t,i)=>d.filter(x=>x.tipo===i).length),mx=Math.max(1,...cnt);
-  $('#tbars').innerHTML=TP.map((t,i)=>`<div class="hb" style="--c:${t.c}"><span style="width:170px">${t.e} ${t.k}</span><div><i style="width:${cnt[i]/mx*100}%"></i></div><b>${cnt[i]}</b></div>`).join('');
+  $('#tbars').innerHTML=TP.map((t,i)=>`<div class="hb" style="--c:${t.c}"><span style="width:170px">${ic(i)}${t.k}</span><div><i style="width:${cnt[i]/mx*100}%"></i></div><b>${cnt[i]}</b></div>`).join('');
   const hrs=Array(24).fill(0);d.filter(x=>x.tipo<=1).forEach(x=>{const h=+new Date(x.created_at).toLocaleString('en-GB',{hour:'2-digit',hour12:false,timeZone:'America/Bogota'})%24;hrs[h]++});
   const hm=Math.max(1,...hrs);$('#hbars').innerHTML=hrs.map((v,h)=>`<i title="${h} h: ${v}" style="height:${Math.max(3,v/hm*100)}%"></i>`).join('');
   const cf=await sb.from('confirmaciones').select('reporte_id,voto,created_at').gte('created_at',s7).limit(1000);
   if(!cf.error){$('#k2').textContent=fmt(cf.data.length);const du=duraciones(d,cf.data),keys=Object.keys(du);
-   $('#dur').innerHTML=keys.length?keys.map(k=>{const a=du[k],avg=a.reduce((x,y)=>x+y,0)/a.length;return`${TP[k].e} ${TP[k].k}: <b>${fmtMin(avg)}</b> en promedio (${a.length} cerrado${a.length>1?'s':''})`}).join('<br>'):'Aún no hay reportes cerrados por la comunidad. Esta tabla se llena sola con el uso: es el dato propio de la ciudad.'}}
+   $('#dur').innerHTML=keys.length?keys.map(k=>{const a=du[k],avg=a.reduce((x,y)=>x+y,0)/a.length;return`${ic(k)}${TP[k].k}: <b>${fmtMin(avg)}</b> en promedio (${a.length} cerrado${a.length>1?'s':''})`}).join('<br>'):'Aún no hay reportes cerrados por la comunidad. Esta tabla se llena sola con el uso: es el dato propio de la ciudad.'}}
  $('#k3').textContent=fmt(Object.values(reps).filter(alive).length);
  const dm=Object.values(reps).filter(r=>isSt(r)&&alive(r)).sort((a,b)=>b.ok-a.ok||a.t-b.t).slice(0,5);
- $('#dam').innerHTML=dm.length?dm.map(r=>`${TP[r.tipo].e} ${TP[r.tipo].k} · <b>${r.ok+1}</b> persona${r.ok?'s':''} · abierto ${ago(r.t).replace('hace ','')}`).join('<br>'):'No hay daños abiertos reportados.';
+ $('#dam').innerHTML=dm.length?dm.map(r=>`${ic(r.tipo)}${TP[r.tipo].k} · <b>${r.ok+1}</b> persona${r.ok?'s':''} · abierto ${ago(r.t).replace('hace ','')}`).join('<br>'):'No hay daños abiertos reportados.';
  ecoTotal()}
 $('#egb').onclick=async()=>{if(!sb||!USER){toast('Inicia sesión primero');return}
  if(Date.now()-(+LS.get('mov_eco_'+DEV,'0'))<3e5){toast('Ya registraste tu ahorro hace poco');return}
