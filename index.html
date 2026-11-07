@@ -4,6 +4,7 @@
 <meta name="theme-color" content="#2e2b6b">
 <title>MOVI-INFO · Reportes de movilidad</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <style>
 :root{--ind:#2e2b6b;--ind2:#3b3a8c;--gr:#1e6b3a;--lgr:#ddf3e4;--bg:#f3f2fb;--card:#fff;--tx:#1d1b3a;--mu:#5f5c86;--ln:#dcdaf0;--am:#a86a0a;--lam:#fff1d6;--rd:#b53030;--lrd:#fbe3e3}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#14132b;--card:#1e1d3d;--tx:#ecebff;--mu:#aeacd4;--ln:#34326a;--ind:#c9c7f5;--ind2:#9d9bf0;--gr:#6fd596;--lgr:#173a27;--am:#f0b64d;--lam:#3d2f12;--rd:#f19a9a;--lrd:#411d1d}}
@@ -121,6 +122,28 @@ body.tv #tv{display:block}
 .tabs button[aria-selected=true]{background:color-mix(in srgb,var(--ind2) 13%,transparent);color:var(--ind2)}
 .basemap{filter:saturate(.8) brightness(1.04) contrast(.94)}
 .mapdk .basemap{filter:invert(1) hue-rotate(180deg) saturate(.7) brightness(.92) contrast(.9)}
+
+/* ===== v7: buscador, ruta, guía, lugares ===== */
+#sb2{position:absolute;top:10px;left:10px;right:64px;z-index:800}
+.sbi{display:flex;align-items:center;gap:8px;background:color-mix(in srgb,var(--card) 93%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-radius:15px;padding:0 12px;height:46px;box-shadow:var(--sh1)}
+.sbi svg{width:19px;height:19px;flex:none;fill:none;stroke:var(--mu);stroke-width:2;stroke-linecap:round}
+#q{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:16px;color:var(--tx);outline:0;-webkit-appearance:none}
+#qx{border:0;background:var(--ln);color:var(--mu);width:22px;height:22px;border-radius:50%;font-size:11px;cursor:pointer}
+#qres{display:none;margin-top:6px;background:var(--card);border-radius:15px;box-shadow:var(--sh1);overflow:hidden;max-height:55vh;overflow-y:auto}
+.qi{display:flex;gap:10px;padding:10px 12px;cursor:pointer;align-items:center;border-bottom:1px solid var(--ln)}.qi:last-child{border:0}
+.qi i{flex:none;width:30px;height:30px;border-radius:50%;background:var(--ind2);color:#fff;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:14px}
+.qi b{font-size:14px;display:block}.qi small{display:block;color:var(--mu);font-size:12px}.qi .d{margin-left:auto;font-size:11px;color:var(--mu);white-space:nowrap}
+#gb{position:absolute;left:10px;right:64px;top:64px;z-index:790;background:#2e2b6b;color:#fff;border-radius:15px;padding:11px 14px;box-shadow:var(--sh1);font-size:15px;display:flex;gap:10px;align-items:center}
+#gb b{font-size:20px;white-space:nowrap}#gb button{margin-left:auto;border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:10px;padding:6px 9px;font-size:13px}
+.ros{display:flex;gap:8px;margin:10px 0;overflow-x:auto}
+.ro{flex:1;min-width:104px;text-align:left;border:2px solid var(--ln);background:var(--card);color:var(--tx);border-radius:14px;padding:9px 10px;font:inherit;cursor:pointer}
+.ro b{font-size:17px;display:block}.ro span{font-size:11.5px;color:var(--mu);display:block}.ro em{display:block;font-style:normal;font-size:11px;font-weight:700;color:var(--gr);margin-top:3px}
+.ro.on{border-color:var(--ind2);background:color-mix(in srgb,var(--ind2) 10%,var(--card))}
+.btn{border:0;border-radius:12px;padding:10px 14px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;background:var(--ind2);color:#fff;text-decoration:none;display:inline-block}
+.btn.s{background:color-mix(in srgb,var(--ind2) 14%,transparent);color:var(--ind2)}
+#rt ol{margin:6px 0 0;padding-left:20px;font-size:13px}#rt li{margin:3px 0}
+#rt summary{cursor:pointer;font-weight:600;font-size:13px;margin-top:8px}
+.go{border:0;background:var(--ind2);color:#fff;border-radius:10px;padding:6px 12px;font:inherit;font-weight:700;cursor:pointer;margin-top:6px}
 </style></head><body>
 <div id="auth"><form class="authc" id="af" novalidate>
  <h2>MOVI-INFO</h2><div class="mu" style="margin-bottom:14px">Reportes de la comunidad para mover mejor la ciudad</div>
@@ -136,7 +159,7 @@ body.tv #tv{display:block}
 <header><div><b>MOVI-INFO</b><small>Reportes de la comunidad para mover mejor la ciudad</small></div>
  <div class="chips"><span class="chip" id="ppl">👥 –</span><span class="chip" id="live">conectando…</span><span class="chip" id="gps">GPS…</span><button class="chip" id="tvb" type="button" title="Modo pantalla para proyectar">🖥️ Pantalla</button></div></header>
 <div class="app">
- <div id="mapw"><div id="map"></div><div id="rain"></div><div id="cross"><i></i></div>
+ <div id="mapw"><div id="map"></div><div id="rain"></div><div id="cross"><i></i></div><div id="sb2"><div class="sbi"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input id="q" type="search" placeholder="¿A dónde vas?" autocomplete="off" enterkeyhint="search" aria-label="Buscar destino"><button id="qx" type="button" aria-label="Borrar" style="display:none">✕</button></div><div id="qres"></div></div><div id="gb" style="display:none" aria-live="polite"></div>
   <div id="tv"><div id="tvk"><div><b id="tv1">0</b><span>reportes activos</span></div><div><b id="tv2">0</b><span>personas conectadas</span></div><div><b id="tv3">–</b><span>calidad del aire (AQI)</span></div><div><b id="tv4">0</b><span>kg CO₂ evitados (est.)</span></div></div><div id="tvt"></div><div id="tvu">Entra y reporta: <b>rodri370.github.io/movi-info</b></div><button id="tvx" type="button">Salir de pantalla</button></div></div>
  <section id="sheet">
   <div class="tabs" role="tablist"><button role="tab" data-t="p1" aria-selected="true">Ahora</button><button role="tab" data-t="p2" aria-selected="false">Reportar</button><button role="tab" data-t="p3" aria-selected="false">Impacto</button><button role="tab" data-t="p4" aria-selected="false">Más</button></div>
@@ -144,8 +167,9 @@ body.tv #tv{display:block}
    <div id="setup" class="card" style="display:none;border-color:var(--rd)"><h3>Falta conectar la base de datos</h3><div class="mu">Revisa SUPABASE_URL y SUPABASE_KEY en CONFIG.</div></div>
    <div id="gmsg" class="card warnc" style="display:none"><h3>📍 Falta tu ubicación</h3><div class="mu" id="gtxt" style="color:var(--tx)"></div>
     <div class="row" style="margin-top:8px;justify-content:flex-start"><button class="chip" style="background:var(--ind2)" id="gretry" type="button">Reintentar GPS</button><button class="chip" style="background:var(--ind2)" id="gcopy" type="button">Copiar enlace</button></div></div>
+   <div class="card" id="rt" style="display:none"></div>
    <div class="card rec l0" id="rec"><div class="t">Calculando…</div></div>
-   <div class="card"><div class="row"><div><div class="mu">Clima ahora</div><div class="big" id="temp">–</div></div><div style="text-align:right"><div id="wdesc" style="font-weight:700">Cargando…</div><div class="mu" id="wdet"></div></div></div>
+   <div class="card"><div class="row"><div><div class="mu">Clima ahora</div><div class="big" id="temp">–</div></div><div style="text-align:right"><div id="wdesc" style="font-weight:700">Cargando…</div><div class="mu" id="wdet"></div></div></div><div class="mu" id="rainfc" style="margin-top:8px"></div>
     <div class="mu" style="margin-top:6px"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a></div></div>
    <div class="card"><div class="row"><div><div class="mu">Tráfico donde estás (TomTom)</div><div id="tr" style="font-weight:700">–</div></div><span class="chip" id="trt" style="background:#888">sin datos</span></div><div class="mu" id="trd"></div></div>
    <div class="card"><div class="row"><div><div class="mu">Calidad del aire donde estás</div><div id="aq" style="font-weight:700">–</div></div><span class="chip" id="aqt" style="background:#888">sin datos</span></div><div class="mu" id="aqd">Estimación de modelo (CAMS vía Open-Meteo), no un sensor en tu esquina.</div></div>
@@ -222,6 +246,8 @@ body.tv #tv{display:block}
 <div class="toast" id="toast" role="status"></div>
 <div id="onb" role="dialog" aria-modal="true"><div class="box" style="text-align:center"><div class="em" id="onb-em"></div><h2 id="onb-t" style="margin:8px 0;color:var(--ind)"></h2><p id="onb-p" style="margin:0 0 12px"></p><div id="onb-dots" class="mu" style="margin-bottom:10px"></div><button class="go" id="onb-n" type="button"></button><button class="go sec" id="onb-s" type="button">Saltar</button></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
 <script>
 // ================= CONFIGURACIÓN =================
@@ -306,11 +332,40 @@ $('#af').onsubmit=async e=>{e.preventDefault();if(!sb)return aerr('Falta conecta
 // ---------- Mapa ----------
 const map=L.map('map',{zoomControl:false}).setView(CONFIG.CENTER,14);map.attributionControl&&map.attributionControl.setPrefix(false); // sin bandera/enlace de Leaflet; se conservan los créditos de OSM y TomTom
 L.control.zoom({position:'topright'}).addTo(map);
-// Mapa base: OpenStreetMap suavizado; en modo oscuro se invierte solo el mapa (no el tráfico ni los iconos)
+// Mapa base Positron (OpenFreeMap, vectorial y sin clave) con lugares propios; respaldo automático a OpenStreetMap
+const POI={salud:{c:'#e5484d',n:'Salud',k:['hospital','doctors','pharmacy','dentist','veterinary','clinic'],i:'<path d="M12 5v14M5 12h14"/>'},
+ comida:{c:'#f08a24',n:'Comida',k:['restaurant','fast_food','food_court','ice_cream','bakery'],i:'<path d="M8 4v7a2 2 0 0 0 2 2v7M6 4v5M10 4v5M17 20V4c-2 1-3.500 4-3.500 7H17"/>'},
+ cafe:{c:'#a0673a',n:'Café y bares',k:['cafe','bar','pub','beer'],i:'<path d="M5 9h11v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4zM16 10h2a2 2 0 0 1 0 4h-2M8 4v2M12 4v2"/>'},
+ hotel:{c:'#2f7bf5',n:'Alojamiento',k:['lodging','hotel','hostel','motel','campsite'],i:'<path d="M4 18V7M4 14h16v4M20 14v-2a3 3 0 0 0-3-3h-6v5"/><circle cx="7.500" cy="11" r="1.500"/>'},
+ fuel:{c:'#18a86b',n:'Combustible',k:['fuel','charging_station'],i:'<path d="M6 20V6a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v14M4 20h13M15 9h2a2 2 0 0 1 2 2v5a1.500 1.500 0 0 0 3 0V9l-3-3M8 8h5"/>'},
+ compras:{c:'#d94f9b',n:'Compras',k:['shop','grocery','supermarket','clothing_store','mall','department_store','convenience','marketplace','shoes','butcher','alcohol_shop'],i:'<path d="M6 8h12l-1 12H7zM9 8a3 3 0 0 1 6 0"/>'},
+ edu:{c:'#d99a00',n:'Educación',k:['school','college','university','kindergarten','library'],i:'<path d="M2 9l10-5 10 5-10 5zM6 11.500V16c0 1.500 3 3 6 3s6-1.500 6-3v-4.500"/>'},
+ serv:{c:'#5b6b8c',n:'Servicios',k:['bank','atm','post','police','fire_station','town_hall','courthouse','embassy','government'],i:'<path d="M4 10l8-6 8 6M6 10v8M10 10v8M14 10v8M18 10v8M4 20h16"/>'},
+ park:{c:'#3d6fe0',n:'Parqueadero',k:['parking'],i:'<path d="M9 18V6h4a3.200 3.200 0 0 1 0 6.400H9"/>'},
+ ocio:{c:'#8e5be0',n:'Ocio y cultura',k:['cinema','theatre','museum','stadium','attraction','zoo','theme_park','art_gallery','playground','swimming','sports_centre','fitness_centre','golf'],i:'<path d="M12 4l2.400 5 5.600.700-4.100 3.800 1.100 5.500L12 16.300 7 19l1.100-5.500L4 9.700 9.600 9z"/>'},
+ culto:{c:'#7a7f8c',n:'Culto',k:['place_of_worship'],i:'<path d="M12 3v18M7 8h10"/>'},
+ trans:{c:'#12a7c9',n:'Transporte',k:['bus','bus_station','railway','ferry_terminal','airport','taxi','bicycle_rental'],i:'<rect x="5" y="4" width="14" height="13" rx="3"/><path d="M5 12h14M8 20l1-3M16 20l-1-3"/>'}};
+const poiCat=cl=>Object.keys(POI).find(k=>POI[k].k.includes(cl));
+function poiImg(v){return new Promise(res=>{const sv=`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="34" r="28" fill="rgba(0,0,0,.18)"/><circle cx="32" cy="32" r="28" fill="${v.c}" stroke="#fff" stroke-width="4"/><g transform="translate(15 15) scale(1.4)" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${v.i}</g></svg>`;
+ const im=new Image(64,64);im.onload=()=>res(im);im.onerror=()=>res(null);im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(sv)})}
+async function addPois(gm){try{const st=gm.getStyle(),src=Object.keys(st.sources).find(k=>st.sources[k].type==='vector');if(!src)return;
+ st.layers.filter(l=>/^poi/.test(l.id)).forEach(l=>{try{gm.removeLayer(l.id)}catch(e){}});
+ const font=((st.layers.find(l=>l.layout&&l.layout['text-font'])||{}).layout||{})['text-font']||['Noto Sans Regular'];
+ for(const k of Object.keys(POI)){const im=await poiImg(POI[k]);if(im&&!gm.hasImage('poi-'+k))gm.addImage('poi-'+k,im,{pixelRatio:2})}
+ const m=['match',['get','class']];Object.keys(POI).forEach(k=>m.push(POI[k].k,k));m.push('x');
+ gm.addLayer({id:'movi-poi',type:'symbol',source:src,'source-layer':'poi',minzoom:14.5,filter:['!=',m,'x'],
+  layout:{'icon-image':['concat','poi-',m],'icon-size':['interpolate',['linear'],['zoom'],14.5,.7,18,1.05],'text-field':['get','name'],'text-font':font,'text-size':11,'text-anchor':'top','text-offset':[0,1.2],'text-max-width':7,'text-optional':true,'symbol-sort-key':['get','rank']},
+  paint:{'text-color':'#3b3a5c','text-halo-color':'#fff','text-halo-width':1.4}});window.__gm=gm;window.__poiOK=true}catch(e){window.__poiErr=String(e&&e.stack||e).slice(0,300);console.warn('lugares',e)}}
+function makeBase(){const osm=()=>{const o=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,className:'basemap',attribution:'&copy; OpenStreetMap'});o.addTo(map);o.bringToBack&&o.bringToBack();base=o};
+ if(typeof maplibregl==='undefined'||typeof L.maplibreGL!=='function'||typeof fetch!=='function'){osm();return}
+ fetch('https://tiles.openfreemap.org/styles/positron').then(r=>{if(!r.ok)throw new Error('style '+r.status);return r.json()}).then(style=>{
+  const g=L.maplibreGL({style,attribution:'&copy; <a href="https://openfreemap.org">OpenFreeMap</a> &copy; OpenMapTiles &copy; OpenStreetMap'}).addTo(map);base=g;
+  const gm=g.getMaplibreMap();window.__gm0=gm;let ok=false;let busy=false;const go=()=>{ok=true;if(busy||gm.getLayer('movi-poi'))return;busy=true;addPois(gm).finally(()=>{busy=false})};gm.on('load',go);let n=0;const iv=setInterval(()=>{if(gm.getLayer('movi-poi')||++n>90){clearInterval(iv);return}if(gm.isStyleLoaded())go()},700);
+  setTimeout(()=>{if(ok||gm.isStyleLoaded())return;try{map.removeLayer(g)}catch(e){}osm()},20000);
+  try{const c=g.getContainer&&g.getContainer();if(c)c.classList.add('basemap')}catch(e){}}).catch(e=>{window.__mbErr=String(e&&e.stack||e).slice(0,400);osm()})}
 let base=null,baseDark=null;
 function baseMap(){const t=document.documentElement.getAttribute('data-theme'),dark=t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);
- document.documentElement.classList.toggle('mapdk',dark);baseDark=dark;
- if(!base){base=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,className:'basemap',attribution:'&copy; OpenStreetMap'}).addTo(map);base&&base.bringToBack&&base.bringToBack()}}
+ document.documentElement.classList.toggle('mapdk',dark);baseDark=dark;if(!base){base=true;makeBase()}}
 baseMap();try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',baseMap)}catch(e){}
 if(CONFIG.TOMTOM_KEY)L.tileLayer(`https://api.tomtom.com/traffic/map/4/tile/flow/relative/{z}/{x}/{y}.png?key=${CONFIG.TOMTOM_KEY}`,{opacity:.85,maxZoom:18,attribution:'Tráfico &copy; TomTom'}).addTo(map);
 const layer=L.layerGroup().addTo(map);
@@ -621,4 +676,98 @@ setInterval(()=>{if(document.body.classList.contains('tv'))ecoTotal()},30000);
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
  document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id===b.dataset.t));if(b.dataset.t==='p3')loadImpact();setTimeout(()=>map.invalidateSize(),50)});
 recompute();
+
+// ================= v7: buscador, rutas con reportes de la comunidad, guía por voz, lluvia =================
+(function(){try{
+const K=CONFIG.TOMTOM_KEY,q$=s=>document.querySelector(s),esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fT=s=>{const m=Math.round(s/60);return m>=60?Math.floor(m/60)+' h '+(m%60)+' min':Math.max(1,m)+' min'};
+const fD=m=>m>=1000?(m/1000).toFixed(1).replace('.',',')+' km':Math.round(m/10)*10+' m';
+const D=(a,b)=>map.distance(a,b);
+const minD=(p,pts)=>{let b=1e9;const k=111320,c=Math.cos(p[0]*Math.PI/180);for(let i=1;i<pts.length;i++){const ax=(pts[i-1][1]-p[1])*k*c,ay=(pts[i-1][0]-p[0])*k,bx=(pts[i][1]-p[1])*k*c,by=(pts[i][0]-p[0])*k,dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy;let t=l?-(ax*dx+ay*dy)/l:0;t=Math.max(0,Math.min(1,t));const d=Math.hypot(ax+t*dx,ay+t*dy);if(d<b)b=d}return b}; // distancia punto–ruta por segmentos
+const R={dest:null,routes:[],sel:0,grp:(typeof L.layerGroup==='function')?L.layerGroup().addTo(map):null};
+const PEN={0:240,1:480,2:300,3:0,4:0,5:60,6:90,7:30,8:30,9:30};   // segundos que "cuesta" cada reporte vigente en el camino
+
+// ---------- Buscador ----------
+const qi=q$('#q'),qr=q$('#qres'),qx=q$('#qx');let qT=0,qSeq=0,items=[];
+function show(list,msg){items=list;qr.innerHTML=(msg?`<div class="qi"><span class="mu">${esc(msg)}</span></div>`:'')+list.map((x,i)=>`<div class="qi" data-i="${i}"><i>${x.ico||'📍'}</i><div><b>${esc(x.name)}</b><small>${esc(x.sub||'')}</small></div>${x.d!=null?`<span class="d">${fD(x.d)}</span>`:''}</div>`).join('');qr.style.display=(list.length||msg)?'block':'none'}
+function saved(){return(typeof PLC!=='undefined'?PLC:[]).map(p=>({name:p.n,sub:'Mis lugares',lat:p.lat,lon:p.lng,ico:'⭐',d:D(here(),[p.lat,p.lng])}))}
+async function search(v){const my=++qSeq;if(!K){show([],'Falta la clave de TomTom');return}
+ try{const[a,b]=here();const r=await fetch(`https://api.tomtom.com/search/2/search/${encodeURIComponent(v)}.json?key=${K}&lat=${a}&lon=${b}&radius=80000&countrySet=CO&language=es-ES&limit=7&typeahead=true`);
+  if(!r.ok)throw new Error('http '+r.status);const j=await r.json();if(my!==qSeq)return;
+  const out=(j.results||[]).filter(x=>x.position).map(x=>({name:(x.poi&&x.poi.name)||(x.address&&(x.address.streetName||x.address.municipality))||v,sub:(x.address&&x.address.freeformAddress)||'',lat:x.position.lat,lon:x.position.lon,d:D([a,b],[x.position.lat,x.position.lon]),ico:x.poi?'📍':'🏠'}));
+  show(out,out.length?'':'Sin resultados en Colombia')}catch(e){if(my===qSeq)show([],'No se pudo buscar ahora. Revisa tu conexión.')}}
+qi.addEventListener('input',()=>{clearTimeout(qT);const v=qi.value.trim();qx.style.display=v?'block':'none';if(v.length<3){show(v?[]:saved());return}qT=setTimeout(()=>search(v),350)});
+qi.addEventListener('focus',()=>{if(!qi.value.trim())show(saved())});
+qi.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();clearTimeout(qT);const v=qi.value.trim();if(items[0]&&items[0].lat)pick(0);else if(v.length>=3)search(v)}});
+qx.addEventListener('click',()=>{qi.value='';qx.style.display='none';qr.style.display='none';clearRoute()});
+qr.addEventListener('click',e=>{const t=e.target.closest('[data-i]');if(t)pick(+t.dataset.i)});
+function pick(i){const x=items[i];if(!x)return;qi.value=x.name;qi.blur();qr.style.display='none';qx.style.display='block';setDest({name:x.name,lat:x.lat,lon:x.lon})}
+document.addEventListener('click',e=>{if(!e.target.closest('#sb2'))qr.style.display='none';const g=e.target.closest('[data-go]');if(g){const[la,lo,n]=g.dataset.go.split('|');try{map.closePopup()}catch(_){}setDest({name:decodeURIComponent(n),lat:+la,lon:+lo})}});
+
+// ---------- Ruta con tráfico en vivo + reportes de la comunidad ----------
+function setDest(d){R.dest=d;qi.value=d.name;routeTo()}
+function prep(rt){const pts=[].concat(...rt.legs.map(l=>l.points.map(p=>[p.latitude,p.longitude])));const sm=rt.summary;
+ const steps=((rt.guidance&&rt.guidance.instructions)||[]).map(i=>({p:[i.point.latitude,i.point.longitude],msg:i.message||'',m:i.routeOffsetInMeters}));
+ const act=Object.values(reps).filter(r=>alive(r)&&r.tipo!==4&&minD([r.lat,r.lng],pts)<90);
+ const pen=act.reduce((a,r)=>a+(PEN[r.tipo]||0),0);
+ return{pts,steps,len:sm.lengthInMeters,t:sm.travelTimeInSeconds,delay:sm.trafficDelayInSeconds||0,rep:act,adj:sm.travelTimeInSeconds+pen,co2:(sm.trafficDelayInSeconds||0)/3600*CONFIG.IDLE_L_H*CONFIG.KG_CO2_L}}
+async function routeTo(silent){const o=here(),d=R.dest;if(!d)return;if(!silent)card('<div class="mu">Calculando la mejor ruta…</div>');
+ try{const r=await fetch(`https://api.tomtom.com/routing/1/calculateRoute/${o[0]},${o[1]}:${d.lat},${d.lon}/json?key=${K}&traffic=true&maxAlternatives=2&routeType=fastest&travelMode=car&instructionsType=text&language=es-ES&computeTravelTimeFor=all`);
+  const j=await r.json();if(!j.routes||!j.routes.length)throw new Error((j.error&&j.error.description)||'sin ruta');
+  R.routes=j.routes.map(prep);
+  const fast=R.routes.reduce((a,r,i)=>r.t<R.routes[a].t?i:a,0),best=R.routes.reduce((a,r,i)=>r.adj<R.routes[a].adj?i:a,0);
+  R.routes.forEach((r,i)=>r.tag=i===best?(best!==fast?'Recomendada por la comunidad':R.routes.length>1?'Recomendada · más rápida':'Ruta'):i===fast?'Más rápida':'Alternativa');
+  R.sel=best;draw();render();if(!silent){const t=q$('[data-t=p1]');t&&t.click()}}
+ catch(e){card(`<div class="row"><b>No pude trazar la ruta</b><button class="btn s" id="rx">Cerrar</button></div><div class="mu">${esc(e.message)}. Puede que el destino no tenga acceso por carretera.</div>`);bind()}}
+function card(h){const c=q$('#rt');c.innerHTML=h;c.style.display='block'}
+function clearRoute(){R.dest=null;R.routes=[];endGuide();if(R.grp&&R.grp.clearLayers)R.grp.clearLayers();q$('#rt').style.display='none'}
+function draw(){if(!R.grp||!L.polyline)return;R.grp.clearLayers&&R.grp.clearLayers();
+ R.routes.forEach((r,i)=>{if(i===R.sel)return;L.polyline(r.pts,{color:'#8b8aa8',weight:6,opacity:.8}).on('click',()=>{R.sel=i;draw();render()}).addTo(R.grp)});
+ const r=R.routes[R.sel];L.polyline(r.pts,{color:'#fff',weight:10,opacity:.95}).addTo(R.grp);const pl=L.polyline(r.pts,{color:'#3b3a8c',weight:6,opacity:1}).addTo(R.grp);
+ L.marker([R.dest.lat,R.dest.lon],{icon:L.divIcon({className:'',iconSize:[34,34],iconAnchor:[17,30],html:'<div style="font-size:30px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))">🏁</div>'})}).addTo(R.grp);
+ try{map.fitBounds(pl.getBounds(),{paddingTopLeft:[24,80],paddingBottomRight:[24,24]})}catch(e){}}
+function render(){const d=R.dest,r=R.routes[R.sel],ml=`${d.lat},${d.lon}`;
+ const tipoN=t=>`${typeof ic==='function'?ic(t):''}${TP[t].k}`;
+ card(`<div class="row"><b>🏁 ${esc(d.name)}</b><button class="btn s" id="rx" type="button">Quitar</button></div>
+ <div class="ros">${R.routes.map((x,i)=>`<button class="ro ${i===R.sel?'on':''}" data-r="${i}" type="button"><b>${fT(x.t)}</b><span>${fD(x.len)} · ${x.rep.length?x.rep.length+' reporte'+(x.rep.length>1?'s':''):'sin reportes'}</span><em>${x.tag}</em></button>`).join('')}</div>
+ <div class="mu">${r.delay>60?`Tráfico en vivo: +${fT(r.delay)} sobre el recorrido libre. `:'Tráfico en vivo: sin demoras importantes. '}Estimación de CO₂ por esa demora: ~${r.co2<1?Math.round(r.co2*1000)+' g':r.co2.toFixed(1).replace('.',',')+' kg'} (ECO-MOV).</div>
+ ${r.rep.length?`<div style="margin-top:8px;font-size:13px"><b>En el camino (reportes de la comunidad)</b><div class="mu" style="margin-top:4px">${r.rep.map(x=>tipoN(x.tipo)).join(' · ')}</div></div>`:''}
+ <div class="row" style="margin-top:10px;justify-content:flex-start;flex-wrap:wrap"><button class="btn" id="gs" type="button">${G.on?'■ Terminar guía':'▶ Iniciar guía'}</button>
+ <a class="btn s" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${ml}&travelmode=driving">Google Maps</a>
+ <a class="btn s" target="_blank" rel="noopener" href="https://maps.apple.com/?daddr=${ml}&dirflg=d">Apple Maps</a></div>
+ <details><summary>Ver pasos (${r.steps.length})</summary><ol>${r.steps.map(s=>`<li>${esc(s.msg)}</li>`).join('')}</ol></details>
+ <div class="mu" style="margin-top:8px">Ruta de TomTom con tráfico en vivo. Los reportes ajustan la recomendación; no sustituyen las señales ni tu criterio al conducir.</div>`);bind()}
+function bind(){const c=q$('#rt');c.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{R.sel=+b.dataset.r;draw();render()});const x=q$('#rx');if(x)x.onclick=()=>{qi.value='';qx.style.display='none';clearRoute()};const g=q$('#gs');if(g)g.onclick=()=>G.on?endGuide():startGuide()}
+
+// ---------- Guía paso a paso (voz + pantalla) ----------
+const G={on:false,i:0,said:-1,voice:true,re:0,wl:null};
+function say(t){if(!G.voice||!('speechSynthesis' in window))return;try{const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+function gbar(h){const b=q$('#gb');b.innerHTML=h;b.style.display='flex';const v=q$('#gv');if(v)v.onclick=()=>{G.voice=!G.voice;v.textContent=G.voice?'🔊':'🔇'};const e=q$('#ge');if(e)e.onclick=endGuide}
+function startGuide(){const r=R.routes[R.sel];if(!r||!r.steps.length)return;G.on=true;G.i=0;G.said=-1;try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>G.wl=w).catch(()=>{})}catch(e){}
+ try{map.setView(here(),17)}catch(e){}render();guideTick(true)}
+function endGuide(){if(!G.on)return;G.on=false;q$('#gb').style.display='none';try{G.wl&&G.wl.release();G.wl=null}catch(e){}try{speechSynthesis.cancel()}catch(e){}if(R.routes.length)render()}
+function guideTick(force){if(!G.on||!pos)return;const r=R.routes[R.sel];if(!r)return;const st=r.steps;
+ if(D(pos,[R.dest.lat,R.dest.lon])<40){gbar('<b>🏁</b><span>Llegaste a tu destino</span><button id="ge" type="button">Cerrar</button>');say('Llegaste a tu destino');G.on=false;return}
+ if(minD(pos,r.pts)>150&&Date.now()-G.re>30000){G.re=Date.now();gbar('<b>↺</b><span>Te saliste de la ruta. Recalculando…</span>');say('Recalculando ruta');routeTo(true).then(()=>{G.i=0;G.said=-1});return}
+ while(G.i<st.length-1&&D(pos,st[G.i].p)<35)G.i++;
+ const s=st[G.i],d=D(pos,s.p);gbar(`<b>${fD(d)}</b><span>${esc(s.msg)}</span><button id="gv" type="button" aria-label="Voz">${G.voice?'🔊':'🔇'}</button><button id="ge" type="button">✕</button>`);
+ if(G.said!==G.i&&(d<200||force)){G.said=G.i;say((d>60?'En '+Math.round(d/10)*10+' metros, ':'')+s.msg)}
+ try{map.panTo(pos)}catch(e){}}
+const _onPos=onPos;onPos=function(p){_onPos(p);try{guideTick()}catch(e){console.warn(e)}};
+
+// ---------- Tocar un lugar del mapa → "Ir aquí" ----------
+map.on('click',e=>{const gm=window.__gm;if(!window.__poiOK||!gm||!L.popup)return;try{const p=gm.project([e.latlng.lng,e.latlng.lat]),f=gm.queryRenderedFeatures([[p.x-16,p.y-16],[p.x+16,p.y+16]],{layers:['movi-poi']})[0];if(!f||!f.properties.name)return;
+ const c=poiCat(f.properties.class),g=f.geometry.coordinates;L.popup().setLatLng([g[1],g[0]]).setContent(`<b>${esc(f.properties.name)}</b><br><span style="color:#666">${c?POI[c].n:'Lugar'}</span><br><button class="go" type="button" data-go="${g[1]}|${g[0]}|${encodeURIComponent(f.properties.name)}">Ir aquí</button>`).openOn(map)}catch(err){}});
+
+// ---------- Lluvia automática (Open-Meteo, tiempo real + próxima hora) ----------
+async function rainFc(){try{const[a,b]=here();const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${a}&longitude=${b}&current=precipitation,weather_code&minutely_15=precipitation&forecast_minutely_15=5&timezone=auto`);const j=await r.json();
+ const now=(j.current&&j.current.precipitation)||0,wc=(j.current&&j.current.weather_code)||0,arr=((j.minutely_15&&j.minutely_15.precipitation)||[]).map(v=>v||0),raining=now>0.05||wc>=51;
+ const nxt=arr.findIndex((v,i)=>i>0&&v>0.05);let t;
+ if(raining)t=`🌧️ <b>Lloviendo ahora</b>${now>0?` (${now.toFixed(1).replace('.',',')} mm)`:''}${arr.slice(1).some(v=>v>0.05)?' · seguirá la próxima hora':' · debería parar pronto'}`;
+ else if(nxt>0)t=`⛅ <b>Posible lluvia en ~${nxt*15} min</b>`;else t='☀️ <b>Sin lluvia prevista</b> en la próxima hora';
+ const el=q$('#rainfc');if(el)el.innerHTML=t+' <span style="opacity:.7">· estimación de modelo, no un pluviómetro en tu esquina</span>';
+ const rn=q$('#rain');if(rn&&raining){rn.style.opacity=Math.min(1,.4+now*.25);rn.style.animationDuration=Math.max(.25,.6-now*.1)+'s'}}catch(e){}}
+setTimeout(rainFc,1500);setInterval(rainFc,600000);
+}catch(e){console.warn('v7',e)}})();
+
 </script></body></html>
