@@ -186,6 +186,8 @@ body.tv #tv{display:block}
    <button class="go sec" id="clr" type="button" style="margin:-4px 0 14px">🟢 Todo despejado aquí (cierra un reporte cercano)</button>
    <div class="sub">Lo que está dañado en la vía (dura hasta que lo arreglen)</div>
    <div class="rgrid" id="rs"></div>
+   <div class="sub">Transporte público (dura poco: se borra solo en minutos)</div>
+   <div class="rgrid" id="rt3"></div>
    <div class="mu">Si ya hay un reporte igual cerca, tu toque lo <b>confirma</b> en vez de duplicarlo. Toca un ícono del mapa para confirmarlo, cerrarlo o retirar el tuyo.</div>
   </div>
   <div class="pane" id="p3">
@@ -272,7 +274,8 @@ let USER=null,DEV='',MYV={};
 const saveV=()=>LS.set('mov_votos_'+DEV,JSON.stringify(MYV));
 const TP=[{k:'Congestión',e:'🚗',c:'#e5a524',ttl:45},{k:'Accidente',e:'⚠️',c:'#d64545',ttl:120},{k:'Obra o cierre',e:'🚧',c:'#ea580c',ttl:240},
  {k:'Parqueo lleno',e:'🅿️',c:'#9333ea',ttl:30},{k:'Parqueo libre',e:'🅿️',c:'#16a34a',ttl:30},{k:'Lluvia o inundación',e:'🌧️',c:'#2563eb',ttl:90},
- {k:'Semáforo dañado',e:'🚦',c:'#0e7490',ttl:43200},{k:'Hueco en la vía',e:'🕳️',c:'#78350f',ttl:43200},{k:'Señal dañada o faltante',e:'🛑',c:'#be123c',ttl:43200},{k:'Alcantarilla tapada',e:'🌊',c:'#1d4ed8',ttl:43200}];
+ {k:'Semáforo dañado',e:'🚦',c:'#0e7490',ttl:43200},{k:'Hueco en la vía',e:'🕳️',c:'#78350f',ttl:43200},{k:'Señal dañada o faltante',e:'🛑',c:'#be123c',ttl:43200},{k:'Alcantarilla tapada',e:'🌊',c:'#1d4ed8',ttl:43200},
+ {k:'Bus pasando ahora',e:'🚌',c:'#0ea5e9',ttl:20},{k:'Paradero muy lleno',e:'🚏',c:'#db2777',ttl:30},{k:'Ruta cortada o desvío',e:'↪️',c:'#4f46e5',ttl:180},{k:'Sin buses hace rato',e:'⏳',c:'#64748b',ttl:60}];
 
 const SV={
  0:'<path d="M5 17v2m14-2v2M4 17h16v-5l-2-5H6l-2 5z"/><circle cx="8" cy="14" r=".6"/><circle cx="16" cy="14" r=".6"/><path d="M4 12h16"/>',
@@ -284,8 +287,12 @@ const SV={
  6:'<rect x="8" y="3" width="8" height="18" rx="3.5"/><circle cx="12" cy="8" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="16" r="1"/>',
  7:'<ellipse cx="12" cy="15" rx="7.5" ry="3.5"/><path d="M4.5 15v-3M19.5 15v-3M8 8l1.6 2.2M16 8l-1.6 2.2M12 6v2.4"/>',
  8:'<path d="M8.6 3h6.8L21 8.6v6.8L15.4 21H8.6L3 15.4V8.6z"/><path d="M12 8v5M12 16.2v.1"/>',
- 9:'<circle cx="12" cy="12" r="8.5"/><path d="M7.5 9.7h9M7.5 14.3h9M12 3.5v17"/>'};
-const G2=['#f5c04a','#ff7a6e','#ffa05a','#c186f5','#4cd97b','#5aa2ff','#2cb7d4','#a86a3e','#f0527a','#4f86f7'];
+ 9:'<circle cx="12" cy="12" r="8.5"/><path d="M7.5 9.7h9M7.5 14.3h9M12 3.5v17"/>',
+ 10:'<rect x="4" y="4" width="16" height="13" rx="3"/><path d="M4 11h16M8 20v-3M16 20v-3"/><circle cx="8" cy="14.2" r=".7"/><circle cx="16" cy="14.2" r=".7"/>',
+ 11:'<circle cx="9" cy="8" r="2.5"/><circle cx="16.5" cy="9" r="2"/><path d="M4.5 19v-1.5a4.5 4.5 0 0 1 9 0V19M14.5 14.2A3.6 3.6 0 0 1 20 17.5V19"/>',
+ 12:'<path d="M6 20v-8a4 4 0 0 1 4-4h8"/><path d="m15 4 4 4-4 4"/>',
+ 13:'<path d="M7 3h10M7 21h10M8 3v3.5L12 12l-4 5.5V21M16 3v3.5L12 12l4 5.5V21"/>'};
+const G2=['#f5c04a','#ff7a6e','#ffa05a','#c186f5','#4cd97b','#5aa2ff','#2cb7d4','#a86a3e','#f0527a','#4f86f7','#5cc8ff','#ff7eb3','#8b8bff','#9fb0c4'];
 TP.forEach((t,i)=>{t.i=SV[i];t.c2=G2[i]});
 const svg=i=>`<svg viewBox="0 0 24 24" aria-hidden="true">${TP[i].i}</svg>`;
 const ic=i=>`<i class="ic" style="--c:${TP[i].c};--c2:${TP[i].c2}">${svg(i)}</i>`;
@@ -408,7 +415,7 @@ $('#mc').onclick=()=>setMode('center');
 
 // ---------- Reportes ----------
 const reps={};
-const isSt=r=>r.tipo>=6;
+const isSt=r=>r.tipo>=6&&r.tipo<=9;
 const alive=r=>(Date.now()-r.t)/6e4<TP[r.tipo].ttl&&!(r.no>=2&&r.no>r.ok);
 const estado=r=>r.no>0?(isSt(r)?'Reparación reportada':'Despejándose'):r.ok>0?'Confirmado':'Nuevo';
 const mkIcon=(r,isNew)=>L.divIcon({className:'',iconSize:[40,40],iconAnchor:[20,20],html:`<div class="pin${isSt(r)?' st':''}${isNew?' new':''}" style="--c:${TP[r.tipo].c};--c2:${TP[r.tipo].c2}">${svg(r.tipo)}${r.ok>0?`<em>${r.ok}</em>`:''}</div>`});
@@ -439,15 +446,16 @@ let lastR=0;
 async function report(tipo){if(!sb){toast('Falta conectar la base de datos');return}
  if(Date.now()-lastR<20000){toast('Espera unos segundos antes de otro reporte');return}
  let lat,lng;if(MODE==='gps'){if(!pos){toast('Sin GPS: usa "Centro del mapa"');return}[lat,lng]=pos}else{const c=map.getCenter();lat=c.lat;lng=c.lng}
- const rad=tipo>=6?40:120;
+ const rad=tipo>=6&&tipo<=9?40:120;
  const dup=Object.values(reps).find(r=>r.tipo===tipo&&alive(r)&&map.distance([lat,lng],[r.lat,r.lng])<rad);
  if(dup){if(dup.disp===DEV){toast('Ya reportaste esto aquí');return}if(MYV[dup.id]){toast('Ya confirmaste este reporte');return}lastR=Date.now();await vote(dup,1);return}
  const x=await sb.from('reportes').insert({tipo,lat,lng,dispositivo:DEV}).select().single();
  if(x.error||!x.data){toast('No se pudo enviar el reporte');return}
  lastR=Date.now();addRep(x.data,true);recompute();tick(TP[tipo].e+' '+TP[tipo].k+' reportado');ripple([lat,lng]);toast('Reporte enviado: '+TP[tipo].k)}
 $('#rg').innerHTML=TP.slice(0,6).map((t,i)=>`<button class="rbtn" type="button" data-k="${i}" style="--c:${t.c};--c2:${t.c2}"><span>${svg(TP.indexOf(t))}</span>${t.k}</button>`).join('');
-$('#rs').innerHTML=TP.slice(6).map((t,i)=>`<button class="rbtn" type="button" data-k="${i+6}" style="--c:${t.c};--c2:${t.c2}"><span>${svg(TP.indexOf(t))}</span>${t.k}</button>`).join('');
-$('#rg').onclick=$('#rs').onclick=e=>{const b=e.target.closest('button');if(b)report(+b.dataset.k)};
+$('#rs').innerHTML=TP.slice(6,10).map((t,i)=>`<button class="rbtn" type="button" data-k="${i+6}" style="--c:${t.c};--c2:${t.c2}"><span>${svg(TP.indexOf(t))}</span>${t.k}</button>`).join('');
+$('#rt3').innerHTML=TP.slice(10).map((t,i)=>`<button class="rbtn" type="button" data-k="${i+10}" style="--c:${t.c};--c2:${t.c2}"><span>${svg(i+10)}</span>${t.k}</button>`).join('');
+$('#rg').onclick=$('#rs').onclick=$('#rt3').onclick=e=>{const b=e.target.closest('button');if(b)report(+b.dataset.k)};
 $('#clr').onclick=()=>{const c=here();
  const n=Object.values(reps).filter(r=>r.tipo<=5&&alive(r)&&r.disp!==DEV&&!MYV[r.id]&&map.distance(c,[r.lat,r.lng])<=200).sort((a,b)=>map.distance(c,[a.lat,a.lng])-map.distance(c,[b.lat,b.lng]))[0];
  if(!n){toast('No hay reportes de otros a menos de 200 m para cerrar');return}vote(n,-1)};
@@ -464,7 +472,7 @@ function autoCheck(v){if(!sb||!USER||v<0||!SET.auto)return;if(v>=20)lastFast=Dat
 
 // ---------- Carga de datos y tiempo real ----------
 async function load(){if(!sb)return;const now=Date.now(),since=new Date(now-4*36e5).toISOString(),since30=new Date(now-30*864e5).toISOString();
- const a=await sb.from('reportes').select('*').or(`created_at.gte.${since},and(tipo.gte.6,created_at.gte.${since30})`).order('created_at').limit(800);
+ const a=await sb.from('reportes').select('*').or(`created_at.gte.${since},and(tipo.gte.6,tipo.lte.9,created_at.gte.${since30})`).order('created_at').limit(800);
  if(a.error){setLive('error de datos','bad');return}
  a.data.forEach(x=>addRep(x));const ids=a.data.map(x=>x.id);
  if(ids.length){const b=await sb.from('confirmaciones').select('reporte_id,voto,auto').in('reporte_id',ids);(b.data||[]).forEach(c=>{const r=reps[c.reporte_id];if(r){c.voto>0?r.ok++:r.no++;if(c.auto)r.au++}})}
@@ -618,7 +626,7 @@ function recompute(){const c=pos||[map.getCenter().lat,map.getCenter().lng],R=15
  if(n(1))why.push(`${n(1)} accidente${n(1)>1?'s':''} reportado${n(1)>1?'s':''} a menos de 1,5 km`);
  if(n(0))why.push(`${n(0)} reporte${n(0)>1?'s':''} de congestión cerca`);
  if(n(2))why.push(`${n(2)} obra${n(2)>1?'s':''} o cierre${n(2)>1?'s':''} cerca`);
- const dm=near.filter(r=>r.tipo>=6).length;if(dm)why.push(`🛠️ ${dm} daño${dm>1?'s':''} en la vía reportado${dm>1?'s':''} cerca (semáforos, huecos, señales)`);
+ const dm=near.filter(r=>r.tipo>=6&&r.tipo<=9).length;if(dm)why.push(`🛠️ ${dm} daño${dm>1?'s':''} en la vía reportado${dm>1?'s':''} cerca (semáforos, huecos, señales)`);
  if(FLOW)why.push(`TomTom: ${Math.round(FLOW.cur)} km/h de ${Math.round(FLOW.free)} km/h normales`);
  if(RAIN)why.push('Está lloviendo: la velocidad baja y suben los frenazos');else if(n(5))why.push('Lluvia o inundación reportada cerca');
  if(AQ&&AQ.v>100&&lvl>=1)why.push(`💨 Aire de baja calidad (AQI ${AQ.v}): si puedes, evita esperar con el motor encendido o hacer ejercicio en esta zona`);
@@ -715,7 +723,7 @@ document.addEventListener('click',e=>{if(!e.target.closest('#sb2'))qr.style.disp
 function setDest(d){R.dest=d;qi.value=d.name;routeTo()}
 function prep(rt){const pts=[].concat(...rt.legs.map(l=>l.points.map(p=>[p.latitude,p.longitude])));const sm=rt.summary;
  const steps=((rt.guidance&&rt.guidance.instructions)||[]).map(i=>({p:[i.point.latitude,i.point.longitude],msg:i.message||'',m:i.routeOffsetInMeters}));
- const act=Object.values(reps).filter(r=>alive(r)&&r.tipo!==4&&minD([r.lat,r.lng],pts)<90);
+ const act=Object.values(reps).filter(r=>alive(r)&&r.tipo!==4&&r.tipo<10&&minD([r.lat,r.lng],pts)<90);
  const pen=act.reduce((a,r)=>a+(PEN[r.tipo]||0),0);
  return{pts,steps,len:sm.lengthInMeters,t:sm.travelTimeInSeconds,delay:sm.trafficDelayInSeconds||0,rep:act,adj:sm.travelTimeInSeconds+pen,co2:(sm.trafficDelayInSeconds||0)/3600*CONFIG.IDLE_L_H*CONFIG.KG_CO2_L}}
 async function routeTo(silent){const o=here(),d=R.dest;if(!d)return;if(!silent)card('<div class="mu">Calculando la mejor ruta…</div>');
@@ -788,7 +796,7 @@ function srRender(){const el=$$('#sr-list');if(!el)return;
 async function srCheck(s,manual){if(!K)return;const st=document.querySelector(`[data-st="${s.id}"]`);if(manual&&st)st.textContent='Revisando…';
  try{const r=await fetch(`https://api.tomtom.com/routing/1/calculateRoute/${s.o[0]},${s.o[1]}:${s.d.lat},${s.d.lon}/json?key=${K}&traffic=true&travelMode=car&routeType=fastest&computeTravelTimeFor=all`);
   const j=await r.json();if(!j.routes||!j.routes.length)throw new Error('sin ruta');const p=prep(j.routes[0]);s.lc=Date.now();
-  const bad=p.rep.filter(x=>x.tipo!==3&&x.tipo!==4),tipos=bad.map(x=>TP[x.tipo].k),dl=p.delay>=300;
+  const bad=p.rep.filter(x=>x.tipo!==3&&x.tipo!==4&&x.tipo<10),tipos=bad.map(x=>TP[x.tipo].k),dl=p.delay>=300;
   const txt=`${fT(p.t)} hoy · ${dl?'+'+fT(p.delay)+' por tráfico':'tráfico normal'} · ${bad.length?bad.length+' reporte'+(bad.length>1?'s':'')+' en el camino ('+[...new Set(tipos)].join(', ')+')':'sin reportes en el camino'}`;
   s.st=txt;if(st)st.textContent=txt;
   const key=new Date().toDateString()+'|'+bad.map(x=>x.id).sort().join(',')+'|'+dl;
@@ -827,7 +835,7 @@ const _li=loadImpact;loadImpact=async function(){await _li();await loadRep()};
 const dRep=$$('#d-rep');if(dRep)dRep.addEventListener('toggle',()=>{if(dRep.open)loadRep()});
 
 // === Informe a la autoridad ===
-function iaData(){const only=($$('#ia-f')||{}).value==='conf';return Object.values(reps).filter(r=>r.tipo>=6&&alive(r)&&(!only||r.ok>=1)).sort((a,b)=>(b.ok-a.ok)||(a.t-b.t))}
+function iaData(){const only=($$('#ia-f')||{}).value==='conf';return Object.values(reps).filter(r=>r.tipo>=6&&r.tipo<=9&&alive(r)&&(!only||r.ok>=1)).sort((a,b)=>(b.ok-a.ok)||(a.t-b.t))}
 function iaCount(){const el=$$('#ia-n');if(el)el.textContent=iaData().length+' daños vigentes en el informe'}
 const fdt=t=>new Date(t).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'});
 const gmap=r=>`https://www.google.com/maps?q=${r.lat.toFixed(6)},${r.lng.toFixed(6)}`;
@@ -854,7 +862,7 @@ const DV={on:false,sp:null,ann:new Set(),voice:true,wl:null,tm:0};
  const d=document.createElement('div');d.id='dv';d.setAttribute('role','dialog');d.setAttribute('aria-label','Modo conducción');
  d.innerHTML=`<div class="top"><button id="dx" type="button">✕ Salir</button><button id="dvv" type="button" aria-label="Voz">🔊</button></div><div class="spd"><b id="dsp">–</b><span>km/h</span></div><div class="gd" id="dgd"></div><div class="nx" id="dnx">Sin avisos cerca</div><div class="msg" id="dms"></div><div class="bt"><button data-k="0" type="button">Congestión</button><button data-k="1" type="button">Accidente</button><button data-k="2" type="button">Obra</button><button class="g" data-k="c" type="button">Despejado</button></div>`;document.body.appendChild(d)})();
 function dvVoice(t){if(!DV.voice||!('speechSynthesis' in window))return;try{const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';speechSynthesis.speak(u)}catch(e){}}
-function dvNear(){if(!pos)return[];return Object.values(reps).filter(r=>alive(r)&&r.tipo!==3&&r.tipo!==4).map(r=>({r,d:D(pos,[r.lat,r.lng])})).filter(x=>x.d<1500).sort((a,b)=>a.d-b.d)}
+function dvNear(){if(!pos)return[];return Object.values(reps).filter(r=>alive(r)&&r.tipo!==3&&r.tipo!==4&&r.tipo<10).map(r=>({r,d:D(pos,[r.lat,r.lng])})).filter(x=>x.d<1500).sort((a,b)=>a.d-b.d)}
 function dvTick(){if(!DV.on)return;const sp=DV.sp,slow=sp==null||sp<15;
  $$('#dsp').textContent=sp==null?'–':Math.round(sp);
  document.querySelectorAll('#dv .bt button').forEach(b=>b.disabled=!slow);
