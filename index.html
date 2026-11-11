@@ -841,6 +841,41 @@ const dIa=$$('#d-ia');if(dIa){dIa.addEventListener('toggle',()=>{if(dIa.open)iaC
  $$('#ia-csv').onclick=()=>{const d=iaData();if(!d.length){toast('Aún no hay daños vigentes para informar');return}const q=v=>'"'+String(v).replace(/"/g,'""')+'"';dl('danos-via.csv','text/csv;charset=utf-8','﻿tipo,reportado,confirmaciones,ya_no_esta,latitud,longitud,mapa\n'+d.map(r=>[q(TP[r.tipo].k),q(new Date(r.t).toISOString()),r.ok,r.no,r.lat.toFixed(6),r.lng.toFixed(6),q(gmap(r))].join(',')).join('\n'))}}
 window.__v8={get R(){return R},get SRL(){return SRL},RKEY,routeTo,srCheck,loadRep,iaText,iaHtml,iaData,addRep:(x)=>addRep(x,false),reps};
 
+// ---------- v9: Modo conducción ----------
+const DV={on:false,sp:null,ann:new Set(),voice:true,wl:null,tm:0};
+(function(){const st=document.createElement('style');st.textContent=`#dv{position:fixed;inset:0;z-index:2000;background:#0b0b1a;color:#fff;display:none;flex-direction:column;padding:max(14px,env(safe-area-inset-top)) 16px max(14px,env(safe-area-inset-bottom));gap:12px;font-family:-apple-system,system-ui,Arial}
+#dv .top{display:flex;justify-content:space-between;align-items:center}#dv .top button{background:#23234a;color:#fff;border:0;border-radius:14px;font-size:18px;padding:10px 16px}
+#dv .spd{text-align:center;line-height:1}#dv .spd b{font-size:min(30vw,150px);font-weight:800;letter-spacing:-4px}#dv .spd span{display:block;font-size:18px;opacity:.7;margin-top:2px}
+#dv .nx{background:#17173a;border-radius:20px;padding:16px;min-height:86px;display:flex;gap:14px;align-items:center;font-size:22px;font-weight:700}#dv .nx small{display:block;font-size:14px;font-weight:500;opacity:.75;margin-top:3px}
+#dv .nx .ic{width:46px;height:46px;border-radius:15px;flex:none}#dv .nx .ic svg{width:28px;height:28px}
+#dv .gd{background:#26267a;border-radius:20px;padding:14px 16px;font-size:20px;font-weight:700;display:none}
+#dv .bt{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:auto}#dv .bt button{border:0;border-radius:20px;padding:20px 8px;font-size:20px;font-weight:800;color:#fff;background:#2e2e6b}
+#dv .bt button:disabled{opacity:.28}#dv .bt .g{background:#1f8a4c}#dv .msg{text-align:center;font-size:14px;opacity:.75;min-height:20px}`;document.head.appendChild(st);
+ const d=document.createElement('div');d.id='dv';d.setAttribute('role','dialog');d.setAttribute('aria-label','Modo conducción');
+ d.innerHTML=`<div class="top"><button id="dx" type="button">✕ Salir</button><button id="dvv" type="button" aria-label="Voz">🔊</button></div><div class="spd"><b id="dsp">–</b><span>km/h</span></div><div class="gd" id="dgd"></div><div class="nx" id="dnx">Sin avisos cerca</div><div class="msg" id="dms"></div><div class="bt"><button data-k="0" type="button">Congestión</button><button data-k="1" type="button">Accidente</button><button data-k="2" type="button">Obra</button><button class="g" data-k="c" type="button">Despejado</button></div>`;document.body.appendChild(d)})();
+function dvVoice(t){if(!DV.voice||!('speechSynthesis' in window))return;try{const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';speechSynthesis.speak(u)}catch(e){}}
+function dvNear(){if(!pos)return[];return Object.values(reps).filter(r=>alive(r)&&r.tipo!==3&&r.tipo!==4).map(r=>({r,d:D(pos,[r.lat,r.lng])})).filter(x=>x.d<1500).sort((a,b)=>a.d-b.d)}
+function dvTick(){if(!DV.on)return;const sp=DV.sp,slow=sp==null||sp<15;
+ $$('#dsp').textContent=sp==null?'–':Math.round(sp);
+ document.querySelectorAll('#dv .bt button').forEach(b=>b.disabled=!slow);
+ $$('#dms').textContent=slow?'Toca para reportar o cerrar un reporte aquí':'Reportar solo detenido o a menos de 15 km/h';
+ const n=dvNear(),nx=$$('#dnx');
+ if(n.length){const x=n[0],t=TP[x.r.tipo];nx.innerHTML=`${ic(x.r.tipo)}<div>${esc(t.k)} a ${fD(x.d)}<small>${x.r.ok>0?x.r.ok+' confirmación(es) · ':''}reportado hace ${fT((Date.now()-x.r.t)/1000)}</small></div>`}else nx.textContent='Sin avisos cerca';
+ n.forEach(x=>{if(x.d<700&&!DV.ann.has(x.r.id)){DV.ann.add(x.r.id);dvVoice(`${TP[x.r.tipo].k} reportado a ${Math.round(x.d/50)*50} metros`)}});
+ const gb=$$('#gb'),gd=$$('#dgd');if(gb&&gb.style.display!=='none'&&gb.textContent.trim()){gd.style.display='block';gd.textContent=gb.textContent.replace(/[🔊🔇✕]/g,'').trim()}else gd.style.display='none'}
+async function dvOpen(){if(!pos){toast('Aún no hay GPS. Activa tu ubicación para usar el modo conducción');return}
+ DV.on=true;DV.ann=new Set(dvNear().filter(x=>x.d<700).map(x=>x.r.id));$$('#dv').style.display='flex';document.body.style.overflow='hidden';
+ try{if(navigator.wakeLock)DV.wl=await navigator.wakeLock.request('screen')}catch(e){}
+ dvTick();DV.tm=setInterval(dvTick,2000);dvVoice('Modo conducción activado')}
+function dvClose(){DV.on=false;$$('#dv').style.display='none';document.body.style.overflow='';clearInterval(DV.tm);try{DV.wl&&DV.wl.release();DV.wl=null}catch(e){}try{speechSynthesis.cancel()}catch(e){}}
+$$('#dx').onclick=dvClose;$$('#dvv').onclick=()=>{DV.voice=!DV.voice;$$('#dvv').textContent=DV.voice?'🔊':'🔇';if(!DV.voice)try{speechSynthesis.cancel()}catch(e){}};
+$$('#dv .bt').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(DV.sp!=null&&DV.sp>=15)return;const m=MODE;MODE='gps';
+ try{if(b.dataset.k==='c')$$('#clr').click();else await report(+b.dataset.k)}finally{MODE=m}});
+document.addEventListener('visibilitychange',async()=>{if(DV.on&&!document.hidden){try{if(navigator.wakeLock)DV.wl=await navigator.wakeLock.request('screen')}catch(e){}}});
+(function(){const t=$$('#tvb');if(!t)return;const b=document.createElement('button');b.className='chip';b.id='drv';b.type='button';b.textContent='🚗 Conducir';b.onclick=dvOpen;t.parentNode.insertBefore(b,t)})();
+const _onPos2=onPos;onPos=function(p){try{DV.sp=speedKmh(p)}catch(e){}_onPos2(p);dvTick()};
+Object.assign(window.__v8,{DV,dvOpen,dvClose,dvTick});
+
 }catch(e){console.warn('v7',e)}})();
 
 </script></body></html>
