@@ -594,11 +594,11 @@ async function weather(){try{const[a,b]=here();
 async function traffic(){const t=$('#trt');
  if(!CONFIG.TOMTOM_KEY){$('#tr').textContent='Falta la clave de TomTom';$('#trd').textContent='Pégala en CONFIG.TOMTOM_KEY.';return}
  try{const[a,b]=here();const r=await fetch(`https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json?key=${CONFIG.TOMTOM_KEY}&point=${a},${b}`);
- const f=(await r.json()).flowSegmentData,q=f.currentSpeed/f.freeFlowSpeed;FLOW={q,cur:f.currentSpeed,free:f.freeFlowSpeed};
+ if(!r.ok)throw new Error('http '+r.status);const f=(await r.json()).flowSegmentData,q=f.currentSpeed/f.freeFlowSpeed;FLOW={q,cur:f.currentSpeed,free:f.freeFlowSpeed};
  const[s,c]=q>=.8?['Fluido','#2faa5b']:q>=.5?['Moderado','#d68b0a']:['Congestionado','#d64545'];
  $('#tr').textContent=s;t.textContent=Math.round(f.currentSpeed)+' km/h';t.style.background=c;
  $('#trd').textContent=`Velocidad normal ${Math.round(f.freeFlowSpeed)} km/h · recorrido ${f.currentTravelTime}s vs ${f.freeFlowTravelTime}s`;recompute()}
- catch(e){$('#tr').textContent='No se pudo leer el tráfico';$('#trd').textContent='Revisa tu clave de TomTom.'}}
+ catch(e){$('#tr').textContent='No se pudo leer el tráfico';$('#trd').textContent='Error: '+(e.message||'desconocido')+(/403|401/.test(e.message)?' · la clave no tiene permiso o está bloqueada.':/429/.test(e.message)?' · se acabó el límite diario de TomTom.':' · revisa tu conexión o la clave de TomTom.')}}
 const aqCat=v=>v<=50?['Buena','#2faa5b']:v<=100?['Moderada','#d68b0a']:v<=150?['Dañina para personas sensibles','#ea580c']:['Dañina','#d64545'];
 async function air(){try{const[a,b]=here();
  const r=await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${a}&longitude=${b}&current=us_aqi,pm2_5&timezone=auto`);
