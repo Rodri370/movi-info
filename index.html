@@ -204,6 +204,9 @@ body.tv #tv{display:block}
   </div>
   <div class="pane" id="p4">
    <details class="card" id="d-act"><summary>📋 Mi actividad</summary><div class="body"><div id="act" class="mu">–</div><button class="go sec" id="delall" type="button">Borrar todos mis reportes</button></div></details>
+   <details class="card" id="d-rutas"><summary>🧭 Mis rutas y alertas</summary><div class="body"><div id="sr-list" class="mu">–</div><div class="mu" style="margin-top:8px">Te avisamos de accidentes, obras o demoras en tu ruta a la hora en que sales (20 min antes y 30 después). <b>Solo funciona mientras la app esté abierta</b>; las alertas con la app cerrada requieren un servidor aparte.</div></div></details>
+   <details class="card" id="d-rep"><summary>🏅 Mi reputación</summary><div class="body"><div id="rep-b" class="mu">Ábrela de nuevo en un momento…</div></div></details>
+   <details class="card" id="d-ia"><summary>🏛️ Informe para la autoridad</summary><div class="body"><div class="mu">Arma un informe con los daños en la vía que la comunidad reportó (huecos, semáforos, señales, alcantarillas) para enviarlo a Tránsito o a la Alcaldía.</div><div class="set"><div>Incluir</div><select id="ia-f"><option value="all">Todos los vigentes</option><option value="conf">Solo confirmados por otra persona</option></select></div><div id="ia-n" class="mu"></div><button class="go" id="ia-dl" type="button">Descargar informe</button><button class="go sec" id="ia-cp" type="button">Copiar texto</button><button class="go sec" id="ia-csv" type="button">Descargar CSV</button></div></details>
    <details class="card"><summary>⚙️ Opciones</summary><div class="body">
     <div class="set"><div>Tema<small>Cómo se ve la app</small></div><select id="s-tema"><option value="auto">Automático</option><option value="light">Claro</option><option value="dark">Oscuro</option></select></div>
     <div class="set"><div>Alertas de reportes cercanos<small>Mensaje y vibración cuando alguien reporta accidente, congestión, obra o lluvia cerca. Funciona mientras la app esté abierta.</small></div><label class="sw"><input type="checkbox" id="s-alerta" aria-label="Alertas de reportes cercanos"><i></i></label></div>
@@ -772,6 +775,72 @@ async function rainFc(){try{const[a,b]=here();const r=await fetch(`https://api.o
  const el=q$('#rainfc');if(el)el.innerHTML=t+' <span style="opacity:.7">· estimación de modelo, no un pluviómetro en tu esquina</span>';
  const rn=q$('#rain');if(rn&&raining){rn.style.opacity=Math.min(1,.4+now*.25);rn.style.animationDuration=Math.max(.25,.6-now*.1)+'s'}}catch(e){}}
 setTimeout(rainFc,1500);setInterval(rainFc,600000);
+
+// ---------- v8: rutas guardadas con alertas · reputación · informe a la autoridad ----------
+const $$=s=>document.querySelector(s);
+// === Rutas guardadas ===
+const RKEY='mov_routes_'+DEV;let SRL=[];try{SRL=JSON.parse(localStorage.getItem(RKEY)||'[]')}catch(e){}
+const saveSR=()=>{try{localStorage.setItem(RKEY,JSON.stringify(SRL))}catch(e){}};
+const DN=['D','L','M','M','J','V','S'];
+const rnd5=v=>Math.round(v*1e5)/1e5;
+function srRender(){const el=$$('#sr-list');if(!el)return;
+ el.innerHTML=SRL.length?SRL.map(s=>`<div class="srr" data-id="${s.id}"><div class="row"><b>${esc(s.n)}</b><span class="mu">sale ${esc(s.h)} · ${s.dias.map(d=>DN[d]).join('')}</span></div><div class="mu">→ ${esc(s.d.name)}</div><div class="mu" data-st="${s.id}">${s.st?esc(s.st):'Sin revisar todavía'}</div><div class="row" style="justify-content:flex-start;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="btn s" data-a="chk" type="button">Revisar ahora</button><button class="btn s" data-a="go" type="button">Ir</button><button class="btn s" data-a="on" type="button">${s.on?'🔔 Alertas activas':'🔕 Alertas apagadas'}</button><button class="btn s" data-a="del" type="button">Borrar</button></div></div>`).join(''):'Aún no tienes rutas. Busca un destino, trázalo y toca ⭐ Guardar ruta.'}
+async function srCheck(s,manual){if(!K)return;const st=document.querySelector(`[data-st="${s.id}"]`);if(manual&&st)st.textContent='Revisando…';
+ try{const r=await fetch(`https://api.tomtom.com/routing/1/calculateRoute/${s.o[0]},${s.o[1]}:${s.d.lat},${s.d.lon}/json?key=${K}&traffic=true&travelMode=car&routeType=fastest&computeTravelTimeFor=all`);
+  const j=await r.json();if(!j.routes||!j.routes.length)throw new Error('sin ruta');const p=prep(j.routes[0]);s.lc=Date.now();
+  const bad=p.rep.filter(x=>x.tipo!==3&&x.tipo!==4),tipos=bad.map(x=>TP[x.tipo].k),dl=p.delay>=300;
+  const txt=`${fT(p.t)} hoy · ${dl?'+'+fT(p.delay)+' por tráfico':'tráfico normal'} · ${bad.length?bad.length+' reporte'+(bad.length>1?'s':'')+' en el camino ('+[...new Set(tipos)].join(', ')+')':'sin reportes en el camino'}`;
+  s.st=txt;if(st)st.textContent=txt;
+  const key=new Date().toDateString()+'|'+bad.map(x=>x.id).sort().join(',')+'|'+dl;
+  if(s.on&&(bad.length||dl)&&s.sent!==key){s.sent=key;srNotify(`🧭 ${s.n}: ${txt}`)}
+  saveSR()}catch(e){if(st)st.textContent='No pude revisar ahora ('+e.message+')'}}
+function srNotify(m){toast(m);try{tick(m)}catch(e){}try{navigator.vibrate&&navigator.vibrate([120,60,120])}catch(e){}try{if(document.hidden&&'Notification' in window&&Notification.permission==='granted')new Notification('MOVI-INFO · tu ruta',{body:m})}catch(e){}}
+function srTimer(){const now=new Date(),m=now.getHours()*60+now.getMinutes();
+ SRL.forEach(s=>{if(!s.on||!s.dias.includes(now.getDay()))return;const[h,mm]=s.h.split(':').map(Number),dep=h*60+mm;if(m>=dep-20&&m<=dep+30&&Date.now()-(s.lc||0)>5*6e4)srCheck(s)})}
+document.addEventListener('click',e=>{const b=e.target.closest('.srr [data-a]');if(!b)return;const id=+b.closest('.srr').dataset.id,s=SRL.find(x=>x.id===id);if(!s)return;const a=b.dataset.a;
+ if(a==='chk')srCheck(s,true);
+ else if(a==='go'){const t=document.querySelector('[data-t=p1]');t&&t.click();setDest(s.d)}
+ else if(a==='on'){s.on=!s.on;if(s.on)try{if('Notification' in window&&Notification.permission==='default')Notification.requestPermission()}catch(x){}saveSR();srRender()}
+ else if(a==='del'){if(confirm('¿Borrar esta ruta?')){SRL=SRL.filter(x=>x.id!==id);saveSR();srRender()}}});
+const _render=render;render=function(){_render();try{const g=document.getElementById('gs');if(!g||document.getElementById('sv'))return;
+ const b=document.createElement('button');b.className='btn s';b.id='sv';b.type='button';b.textContent='⭐ Guardar ruta';
+ b.onclick=()=>{const d=R.dest;if(!d)return;if(SRL.length>=5){toast('Máximo 5 rutas guardadas');return}
+  const n=(prompt('Nombre de la ruta',('Ruta a '+d.name).slice(0,40))||'').trim();if(!n)return;
+  let h=(prompt('¿A qué hora sales normalmente? (24 h, ej. 07:00)','07:00')||'').trim();const mt=h.match(/^(\d{1,2}):(\d{2})$/);if(!mt||+mt[1]>23||+mt[2]>59){toast('Hora no válida. Usa el formato 07:00');return}
+  h=mt[1].padStart(2,'0')+':'+mt[2];const o=here();
+  SRL.push({id:Date.now(),n:n.slice(0,40),o:[rnd5(o[0]),rnd5(o[1])],d:{name:d.name,lat:d.lat,lon:d.lon},h,dias:[1,2,3,4,5],on:true});saveSR();srRender();
+  try{if('Notification' in window&&Notification.permission==='default')Notification.requestPermission()}catch(x){}
+  toast('Ruta guardada en Más → Mis rutas')};
+ g.parentNode.insertBefore(b,g.nextSibling)}catch(e){console.warn(e)}};
+srRender();setTimeout(srTimer,6000);setInterval(srTimer,60000);
+
+// === Reputación ===
+const NIV=[[0,'🌱','Nuevo aporte'],[15,'👁️','Vigía del tráfico'],[50,'🛡️','Guardián de la vía'],[150,'🦅','Centinela de la ciudad'],[400,'🏆','Leyenda de movilidad']];
+async function loadRep(){const el=$$('#rep-b');if(!el||!sb||!USER)return;
+ try{const [a,b]=await Promise.all([sb.from('reportes').select('id,tipo').eq('dispositivo',DEV).limit(500),sb.from('confirmaciones').select('id',{count:'exact',head:true}).eq('dispositivo',DEV)]);
+  const mine=(a.data||[]),ids=mine.map(x=>x.id);let conf=0;
+  for(let i=0;i<ids.length;i+=150){const c=await sb.from('confirmaciones').select('reporte_id,voto,dispositivo').in('reporte_id',ids.slice(i,i+150)).limit(1000);(c.data||[]).forEach(x=>{if(x.dispositivo!==DEV&&x.voto>0)conf++})}
+  const pr=mine.length,pc=b.count||0,pts=pr*5+pc+conf*3;let k=0;NIV.forEach((n,i)=>{if(pts>=n[0])k=i});const cur=NIV[k],nx=NIV[k+1],pct=nx?Math.round((pts-cur[0])/(nx[0]-cur[0])*100):100;
+  el.innerHTML=`<div style="font-size:20px;font-weight:800">${cur[1]} ${cur[2]}</div><div class="mu">${pts} puntos${nx?` · te faltan ${nx[0]-pts} para ${nx[1]} ${nx[2]}`:' · nivel máximo'}</div><div style="height:9px;border-radius:9px;background:var(--ln,#e3e3f0);margin:8px 0;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#4cd97b,#3b3a8c)"></div></div><div class="mu">${pr} reportes (×5) · ${pc} confirmaciones o cierres (×1) · ${conf} personas confirmaron tus reportes (×3). Es una medida de tu aporte a la comunidad.</div>`;
+  const m2=$$('#me2');if(m2)m2.textContent=`${cur[1]} ${cur[2]} · ${pts} puntos`}catch(e){el.textContent='No pude cargar tu reputación ahora'}}
+const _li=loadImpact;loadImpact=async function(){await _li();await loadRep()};
+const dRep=$$('#d-rep');if(dRep)dRep.addEventListener('toggle',()=>{if(dRep.open)loadRep()});
+
+// === Informe a la autoridad ===
+function iaData(){const only=($$('#ia-f')||{}).value==='conf';return Object.values(reps).filter(r=>r.tipo>=6&&alive(r)&&(!only||r.ok>=1)).sort((a,b)=>(b.ok-a.ok)||(a.t-b.t))}
+function iaCount(){const el=$$('#ia-n');if(el)el.textContent=iaData().length+' daños vigentes en el informe'}
+const fdt=t=>new Date(t).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'});
+const gmap=r=>`https://www.google.com/maps?q=${r.lat.toFixed(6)},${r.lng.toFixed(6)}`;
+function iaText(){const d=iaData();return `INFORME CIUDADANO DE DAÑOS EN LA VÍA — Santa Marta\nGenerado: ${fdt(Date.now())} desde MOVI-INFO\nReportes de la comunidad, sin verificación oficial.\n\n`+d.map((r,i)=>`${i+1}. ${TP[r.tipo].k} — reportado el ${fdt(r.t)} — confirmado por ${r.ok} persona(s)${r.no?`, ${r.no} dice(n) que ya no está`:''}\n   Ubicación: ${r.lat.toFixed(5)}, ${r.lng.toFixed(5)} — ${gmap(r)}`).join('\n')}
+function iaHtml(){const d=iaData(),by={};d.forEach(r=>by[r.tipo]=(by[r.tipo]||0)+1);
+ return `<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Informe ciudadano de daños en la vía</title><style>body{font:14px/1.5 system-ui,Arial;margin:24px;color:#1b1b2f}h1{font-size:22px;margin:0}table{border-collapse:collapse;width:100%;margin-top:14px}th,td{border:1px solid #ccd;padding:6px 8px;text-align:left;vertical-align:top}th{background:#eef}small{color:#556}@media print{a{color:#000}}</style><h1>Informe ciudadano de daños en la vía</h1><p>Santa Marta, Magdalena · Generado el ${fdt(Date.now())} con MOVI-INFO / ECO-MOV</p><p><b>Resumen:</b> ${d.length} daños vigentes${Object.keys(by).length?' ('+Object.keys(by).map(k=>by[k]+' '+TP[k].k.toLowerCase()).join(', ')+')':''}.</p><p><small>Son reportes hechos por la comunidad y confirmados por otros usuarios; no han sido verificados por una entidad. La ubicación es la del celular de quien reportó, con precisión aproximada. Se solicita su verificación y atención.</small></p><table><tr><th>#</th><th>Tipo</th><th>Reportado</th><th>Confirmaciones</th><th>Ubicación</th></tr>${d.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(TP[r.tipo].k)}</td><td>${fdt(r.t)}</td><td>${r.ok} sí${r.no?` · ${r.no} no`:''}</td><td>${r.lat.toFixed(5)}, ${r.lng.toFixed(5)}<br><a href="${gmap(r)}">Ver en el mapa</a></td></tr>`).join('')}</table></html>`}
+function dl(name,mime,txt){const u=URL.createObjectURL(new Blob([txt],{type:mime})),l=document.createElement('a');l.href=u;l.download=name;document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}
+const dIa=$$('#d-ia');if(dIa){dIa.addEventListener('toggle',()=>{if(dIa.open)iaCount()});$$('#ia-f').onchange=iaCount;
+ $$('#ia-dl').onclick=()=>{if(!iaData().length){toast('Aún no hay daños vigentes para informar');return}dl('informe-danos-via-'+new Date().toISOString().slice(0,10)+'.html','text/html;charset=utf-8',iaHtml());toast('Informe descargado. Ábrelo e imprímelo como PDF si lo necesitas')};
+ $$('#ia-cp').onclick=async()=>{if(!iaData().length){toast('Aún no hay daños vigentes para informar');return}try{await navigator.clipboard.writeText(iaText());toast('Texto copiado: pégalo en tu correo')}catch(e){toast('No se pudo copiar')}};
+ $$('#ia-csv').onclick=()=>{const d=iaData();if(!d.length){toast('Aún no hay daños vigentes para informar');return}const q=v=>'"'+String(v).replace(/"/g,'""')+'"';dl('danos-via.csv','text/csv;charset=utf-8','﻿tipo,reportado,confirmaciones,ya_no_esta,latitud,longitud,mapa\n'+d.map(r=>[q(TP[r.tipo].k),q(new Date(r.t).toISOString()),r.ok,r.no,r.lat.toFixed(6),r.lng.toFixed(6),q(gmap(r))].join(',')).join('\n'))}}
+window.__v8={get R(){return R},get SRL(){return SRL},RKEY,routeTo,srCheck,loadRep,iaText,iaHtml,iaData,addRep:(x)=>addRep(x,false),reps};
+
 }catch(e){console.warn('v7',e)}})();
 
 </script></body></html>
